@@ -166,7 +166,7 @@ app.post("/addQuestion", (req, res) => {
     if (!question || !optionA || !optionB || !optionC || !optionD || !answer) return res.json({ success: false });
     const sql = "INSERT INTO questions (question, optionA, optionB, optionC, optionD, answer) VALUES (?,?,?,?,?,?)";
     db.query(sql, [question, optionA, optionB, optionC, optionD, answer], (err) => {
-        if (err) return res.json({ success: false });
+        if (err) return res.json({ success: false, err });
         res.json({ success: true });
     });
 });
