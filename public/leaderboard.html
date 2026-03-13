@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Competition Leaderboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:"Segoe UI", Arial, sans-serif;
+background:linear-gradient(135deg,#007bff,#00c6ff);
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2{
+margin-bottom:20px;
+}
+
+.table-wrapper{
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:650px;
+}
+
+th,td{
+padding:12px;
+border:1px solid #ddd;
+text-align:center;
+font-size:15px;
+}
+
+th{
+background:#007bff;
+color:white;
+}
+
+tr:nth-child(even){
+background:#f2f2f2;
+}
+
+.buttons{
+margin-top:20px;
+}
+
+button{
+padding:12px 20px;
+margin:10px;
+border:none;
+border-radius:8px;
+font-size:15px;
+cursor:pointer;
+font-weight:bold;
+background:linear-gradient(45deg,#007bff,#00aaff);
+color:white;
+transition:0.3s;
+}
+
+button:hover{
+background:linear-gradient(45deg,#0056b3,#0088cc);
+transform:scale(1.05);
+}
+
+.status{
+padding:20px;
+font-weight:bold;
+color:#666;
+}
+
+/* Mobile */
+
+@media(max-width:768px){
+
+h2{
+font-size:22px;
+}
+
+th,td{
+font-size:13px;
+padding:10px;
+}
+
+button{
+width:100%;
+max-width:300px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Mathematics Competition Leaderboard</h2>
+
+<div class="table-wrapper">
+
+<table id="leaderboardTable">
+
+<thead>
+
+<tr>
+<th>Rank</th>
+<th>Name</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Parish</th>
+<th>Score</th>
+</tr>
+
+</thead>
+
+<tbody id="leaderboardBody">
+
+<tr>
+<td colspan="6" class="status">Loading leaderboard...</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="buttons">
+
+<button onclick="goBack()">Back to Admin Panel</button>
+
+<button onclick="downloadLeaderboard()">Download Leaderboard</button>
+
+</div>
+
+</div>
+
+<script>
+
+async function loadLeaderboard(){
+
+const tbody=document.getElementById("leaderboardBody")
+
+try{
+
+const res=await fetch("/admin/leaderboard")
+
+if(!res.ok){
+throw new Error("Server error")
+}
+
+const data=await res.json()
+
+tbody.innerHTML=""
+
+if(data.success && data.leaderboard.length>0){
+
+data.leaderboard.forEach((student,index)=>{
+
+const row=`
+<tr>
+<td>${index+1}</td>
+<td>${student.name}</td>
+<td>${student.email}</td>
+<td>${student.mobile}</td>
+<td>${student.parish}</td>
+<td>${student.score ?? 0}</td>
+</tr>
+`
+
+tbody.innerHTML+=row
+
+})
+
+}else{
+
+tbody.innerHTML="<tr><td colspan='6' class='status'>No scores yet</td></tr>"
+
+}
+
+}catch(err){
+
+console.log(err)
+
+tbody.innerHTML="<tr><td colspan='6' class='status'>Unable to load leaderboard</td></tr>"
+
+}
+
+}
+
+function goBack(){
+
+window.location="admin.html"
+
+}
+
+async function downloadLeaderboard(){
+
+try{
+
+const res=await fetch("/admin/leaderboard")
+const data=await res.json()
+
+if(!data.success || data.leaderboard.length===0){
+
+alert("No leaderboard data to download.")
+return
+
+}
+
+let csv="Rank,Name,Email,Phone,Parish,Score\n"
+
+data.leaderboard.forEach((student,index)=>{
+
+csv+=`${index+1},"${student.name}","${student.email}","${student.mobile}","${student.parish}",${student.score ?? 0}\n`
+
+})
+
+const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"})
+
+const url=URL.createObjectURL(blob)
+
+const link=document.createElement("a")
+
+link.href=url
+link.download="leaderboard.csv"
+
+document.body.appendChild(link)
+
+link.click()
+
+document.body.removeChild(link)
+
+}catch(err){
+
+console.log(err)
+
+alert("Failed to download leaderboard.")
+
+}
+
+}
+
+loadLeaderboard()
+
+setInterval(loadLeaderboard,5000)
+
+</script>
+
+</body>
+</html>

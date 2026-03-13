@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mathematics Competition</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Segoe UI", Arial, sans-serif;background:linear-gradient(135deg,#007bff,#00c6ff);padding:20px;}
+.container{max-width:900px;margin:auto;background:white;padding:30px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2);}
+h2{text-align:center;margin-bottom:15px;}
+#timer{text-align:center;font-size:22px;font-weight:bold;margin-bottom:15px;color:#d9534f;}
+.progress-container{width:100%;background:#eee;border-radius:10px;margin-bottom:20px;overflow:hidden;}
+.progress-bar{height:12px;width:0%;background:linear-gradient(90deg,#007bff,#00c6ff);}
+.nav{text-align:center;margin-bottom:20px;flex-wrap:wrap;}
+.nav button{margin:4px;padding:8px 12px;border:none;background:#ddd;cursor:pointer;border-radius:6px;font-weight:bold;}
+.nav button:hover{background:#bbb;}
+.nav button.answered{background:#28a745;color:white;}
+.question{background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;}
+.question h3{margin-bottom:10px;}
+label{display:block;padding:8px;cursor:pointer;border-radius:5px;}
+label:hover{background:#eee;}
+button.submit{display:block;margin:25px auto;padding:14px 30px;font-size:18px;background:linear-gradient(45deg,#007bff,#00aaff);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
+button.submit:hover{background:linear-gradient(45deg,#0056b3,#0088cc);transform:scale(1.05);}
+@media(max-width:768px){
+  .container{padding:20px;}
+  .question h3{font-size:16px;}
+  label{font-size:15px;}
+  .nav button{padding:6px 10px;font-size:14px;}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Mathematics Competition</h2>
+
+<div id="timer">Time: 60:00</div>
+
+<div class="progress-container">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="nav" id="navButtons"></div>
+
+<div id="quiz"></div>
+
+<button class="submit" onclick="submitQuiz()">Submit Answers</button>
+
+</div>
+
+<script>
+// =================== ANTI-CHEAT ===================
+// Single tab enforcement
+if(localStorage.getItem("quizActive")){
+  alert("Quiz already running in another tab.");
+  window.location="login.html";
+}
+localStorage.setItem("quizActive",true);
+window.addEventListener("beforeunload",function(){ localStorage.removeItem("quizActive"); });
+
+// Disable right-click & copy
+document.addEventListener("contextmenu", e=> e.preventDefault());
+document.addEventListener("copy", e=> e.preventDefault());
+
+// Disable dev tools
+document.onkeydown = function(e){
+  if(e.keyCode==123 || 
+     (e.ctrlKey && e.shiftKey && ['I','J'].includes(String.fromCharCode(e.keyCode))) || 
+     (e.ctrlKey && e.keyCode==85)) return false;
+};
+
+// Auto-submit if tab hidden
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){
+    alert("You left the quiz page. Quiz will be submitted.");
+    submitQuiz();
+  }
+});
+
+// =================== QUIZ LOGIC ===================
+let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
+let questions = [];
+let answers = JSON.parse(localStorage.getItem("answers")) || {};
+let questionOrder = JSON.parse(localStorage.getItem("quizOrder")) || [];
+
+function startTimer(){
+  const timerElement=document.getElementById("timer");
+  const interval=setInterval(()=>{
+    let minutes=Math.floor(time/60), seconds=time%60;
+    timerElement.innerText=`Time: ${minutes}:${seconds<10?'0'+seconds:seconds}`;
+    time--;
+    localStorage.setItem("quizTime",time);
+    if(time<0){ clearInterval(interval); alert("Time is up! Submitting automatically"); submitQuiz(); }
+  },1000);
+}
+startTimer();
+
+// Shuffle utility
+function shuffleArray(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+  return array;
+}
+
+// Load questions
+async function loadQuestions(){
+  try{
+    const res = await fetch("/questions");
+    questions = await res.json();
+
+    // Random question order
+    if(!questionOrder.length){
+      questionOrder = Array.from({length: questions.length}, (_,i)=>i);
+      shuffleArray(questionOrder);
+      localStorage.setItem("quizOrder", JSON.stringify(questionOrder));
+    }
+
+    let html="", nav="";
+    questionOrder.forEach((qIndex,i)=>{
+      const q = questions[qIndex];
+
+      // Randomize options
+      let opts = [
+        {key:'A',text:q.optionA},
+        {key:'B',text:q.optionB},
+        {key:'C',text:q.optionC},
+        {key:'D',text:q.optionD}
+      ];
+      opts = shuffleArray(opts);
+
+      html+=`<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
+      opts.forEach(opt=>{
+        html+=`<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`;
+      });
+      html+="</div>";
+
+      nav+=`<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
+    });
+
+    document.getElementById("quiz").innerHTML=html;
+    document.getElementById("navButtons").innerHTML=nav;
+
+    restoreAnswers();
+    updateProgress();
+
+  }catch(err){
+    document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>";
+  }
+}
+loadQuestions();
+
+// Save answer
+function saveAnswer(id,value){
+  answers["q"+id]=value;
+  localStorage.setItem("answers",JSON.stringify(answers));
+  document.getElementById("nav"+id).classList.add("answered");
+  updateProgress();
+}
+
+// Restore answers
+function restoreAnswers(){
+  Object.keys(answers).forEach(key=>{
+    const input = document.querySelector(`input[name="${key}"][value="${answers[key]}"]`);
+    if(input) input.checked=true;
+    const qid = key.replace("q","");
+    const navBtn = document.getElementById("nav"+qid);
+    if(navBtn) navBtn.classList.add("answered");
+  });
+}
+
+// Progress bar
+function updateProgress(){
+  let total=questions.length;
+  let answered=Object.keys(answers).length;
+  let percent=(answered/total)*100;
+  document.getElementById("progressBar").style.width=percent+"%";
+}
+
+// Scroll to question
+function scrollToQuestion(id){
+  document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});
+}
+
+// Prevent refresh
+window.onbeforeunload=function(){ return "You may lose your quiz progress"; }
+
+// Submit quiz
+async function submitQuiz(){
+  const studentId=localStorage.getItem("studentId");
+  try{
+    const res=await fetch("/submitQuiz",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({studentId,answers})
+    });
+    const data=await res.json();
+    localStorage.removeItem("answers");
+    localStorage.removeItem("quizOrder");
+    localStorage.removeItem("quizTime");
+    localStorage.removeItem("quizActive");
+    if(data.success){
+      alert("Your score: "+data.score);
+      window.location="leaderboard.html";
+    } else alert("Submission failed");
+  }catch(err){ alert("Error submitting quiz"); }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathematics Competition</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: "Segoe UI", Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:20px;
+    background: linear-gradient(135deg,#0047ff,#00c6ff);
+    color:white;
+}
+
+.container{
+    background:white;
+    color:#333;
+    padding:40px 30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    max-width:500px;
+    width:100%;
+}
+
+h1{
+    font-size:32px;
+    margin-bottom:15px;
+    font-weight:bold;
+}
+
+p{
+    font-size:18px;
+    margin-bottom:30px;
+    line-height:1.6;
+}
+
+.buttons{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.btn{
+    display:block;
+    padding:16px;
+    font-size:18px;
+    font-weight:bold;
+    text-decoration:none;
+    color:white;
+    background:linear-gradient(45deg,#007bff,#00aaff);
+    border-radius:10px;
+    transition:0.3s;
+}
+
+.btn:hover{
+    transform:scale(1.05);
+    background:linear-gradient(45deg,#0056b3,#0088cc);
+}
+
+/* Desktop layout */
+@media(min-width:768px){
+
+    .container{
+        padding:50px;
+    }
+
+    h1{
+        font-size:36px;
+    }
+
+    p{
+        font-size:20px;
+    }
+
+    .buttons{
+        flex-direction:row;
+        justify-content:center;
+    }
+
+    .btn{
+        width:180px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Mathematics Competition</h1>
+
+<p>
+Compete, test your mathematical skills, and see if you qualify for the next round.
+Are you ready to challenge yourself?
+</p>
+
+<div class="buttons">
+<a href="login.html" class="btn">Student Login</a>
+<a href="register.html" class="btn">Register</a>
+<a href="admin.html" class="btn">Admin Panel</a>
+</div>
+
+</div>
+
+</body>
+</html>
