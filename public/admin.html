@@ -373,9 +373,9 @@ const data=await res.json();
 
 tbody.innerHTML="";
 
-if(data.success && data.questions.length>0){
+if(data.success && data.length>0){
 
-data.questions.forEach((q,index)=>{
+data.forEach((q,index)=>{
 
 const row=document.createElement("tr");
 
