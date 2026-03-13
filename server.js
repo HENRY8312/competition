@@ -14,8 +14,9 @@ app.use(express.static(path.join(__dirname, "public"))); // serve static files
 const db = mysql.createConnection({
     host: "sql8.freesqldatabase.com",
     user: "sql8819909",
-    password: "Check your emails",
-    database: "sql8819909"
+    password: "ig6cdQwVAh",
+    database: "sql8819909",
+    
     
 });
 
