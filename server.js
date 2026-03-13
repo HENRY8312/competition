@@ -101,7 +101,7 @@ app.post("/login", (req, res) => {
 });
 
 // --- GET QUESTIONS (RANDOM ORDER) ---
-app.get("/questions", (req, res) => {
+app.get("/admin/questions", (req, res) => {
     db.query("SELECT * FROM questions ORDER BY RAND()", (err, results) => {
         if (err) return res.status(500).json([]);
         res.json(results);
