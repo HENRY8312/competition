@@ -370,8 +370,9 @@ try{
 
 const res=await fetch("/admin/questions");
 const data=await res.json();
-const pre=document.createElement("pre");
-  pre.innerHTML=data
+const pre = document.createElement("pre");
+pre.innerHTML = JSON.stringify(data, null, 2);
+document.body.appendChild(pre);
 tbody.innerHTML="";
 
 if(data.success && data.length>0){
