@@ -5,66 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel - Mathematics Competition</title>
 
-<!-- ================= NEON CSS ================= -->
+<!-- ================= PROFESSIONAL CSS ================= -->
 <style>
 /* --- Global Reset --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
-/* --- Body Neon Dark Theme --- */
+/* --- Body & Background --- */
 body {
-  background: #0f0f0f;
-  color: #fff;
+  background-color: #f5f6fa;
+  color: #333;
   padding: 20px;
   min-height: 100vh;
 }
 
-/* --- Headings Neon Glow --- */
+/* --- Headings --- */
 h2, h3 {
   text-align: center;
   margin-bottom: 20px;
-  color: #00fff7;
-  text-shadow: 0 0 5px #00fff7, 0 0 10px #00fff7, 0 0 20px #00fff7;
-  letter-spacing: 1px;
+  color: #2f3640;
+  font-weight: 600;
 }
 
 /* --- Container / Card --- */
 .container, .login-box {
-  background: #1c1c1c;
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 12px;
   padding: 30px;
   max-width: 1100px;
   margin: 20px auto;
-  box-shadow: 0 0 20px #00fff7, 0 0 40px #00fff7 inset;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .container:hover, .login-box:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0 30px #ff00ff, 0 0 60px #ff00ff inset;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
-/* --- Forms Inputs --- */
+/* --- Forms --- */
+form {
+  margin-bottom: 40px;
+}
+
 input, select, textarea, button {
   width: 100%;
   padding: 14px;
   margin: 10px 0;
-  border-radius: 10px;
-  border: 1px solid #00fff7;
-  background: #0f0f0f;
-  color: #fff;
+  border-radius: 8px;
+  border: 1px solid #dcdde1;
   font-size: 16px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #ff00ff;
-  box-shadow: 0 0 10px #ff00ff;
+  border-color: #273c75;
+  box-shadow: 0 0 6px rgba(39,60,117,0.2);
 }
 
 textarea {
@@ -72,25 +73,22 @@ textarea {
   resize: vertical;
 }
 
-/* --- Buttons Neon Glow --- */
+/* --- Buttons --- */
 button {
-  background: linear-gradient(45deg, #00fff7, #ff00ff);
+  background-color: #273c75;
   color: #fff;
   border: none;
   cursor: pointer;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px #00fff7, 0 0 40px #ff00ff, 0 0 60px #ff00ff inset;
+  background-color: #192a56;
+  transform: scale(1.02);
 }
 
-/* --- Table Styling Neon --- */
+/* --- Table Styling --- */
 .table-wrapper {
   overflow-x: auto;
   margin-bottom: 40px;
@@ -99,37 +97,32 @@ button:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   min-width: 700px;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 th, td {
   padding: 14px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 th {
-  background: #ff00ff;
+  background-color: #40739e;
   color: #fff;
   text-transform: uppercase;
-  text-shadow: 0 0 5px #fff, 0 0 10px #fff;
+  letter-spacing: 0.5px;
 }
 
 tr:nth-child(even) {
-  background: #1c1c1c;
-}
-
-tr:nth-child(odd) {
-  background: #111;
+  background-color: #f1f2f6;
 }
 
 tr:hover {
-  background: #00fff7;
-  color: #000;
-  transform: scale(1.01);
-  transition: all 0.2s ease;
+  background-color: #dcdde1;
 }
 
 /* --- Admin Actions --- */
@@ -140,8 +133,9 @@ tr:hover {
 
 #admin-actions button {
   width: auto;
-  padding: 14px 30px;
+  padding: 12px 25px;
   margin: 10px;
+  font-size: 16px;
 }
 
 /* --- Mobile Responsive --- */
@@ -150,7 +144,7 @@ tr:hover {
     padding: 20px;
   }
 
-  h2 { font-size: 24px; }
+  h2 { font-size: 22px; }
   h3 { font-size: 18px; }
 
   table { font-size: 12px; }
