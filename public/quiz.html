@@ -68,7 +68,8 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
 
   <!-- Sticky Top Status Bar -->
   <div class="top-bar">
-    <div>Student: <span id="studentName">Student</span></div>
+    <!-- Student name will appear here dynamically -->
+    <div>Student: <span id="studentName"></span></div>
     <div>Quiz: <span id="quizName">Mathematics Competition</span></div>
     <div>Total Questions: <span id="totalQuestions">0</span></div>
     <div id="timer">Time: 60:00</div>
@@ -97,9 +98,14 @@ document.onkeydown=function(e){if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','
 document.addEventListener("visibilitychange", ()=>{if(document.hidden){alert("You left the quiz page. Quiz will be submitted.");submitQuiz();}});
 
 // =================== STUDENT NAME ===================
+// Use the registered name from login DB
 const studentNameElement = document.getElementById("studentName");
-const registeredName = localStorage.getItem("studentName"); // from database login
-if(registeredName){ studentNameElement.textContent = registeredName; }
+const registeredName = localStorage.getItem("studentName"); // stored during login
+if(registeredName){
+    studentNameElement.textContent = registeredName;
+} else {
+    studentNameElement.textContent = "Student"; // fallback if not found
+}
 
 // =================== QUIZ LOGIC ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
