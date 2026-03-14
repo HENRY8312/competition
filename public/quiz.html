@@ -114,25 +114,47 @@ function shuffleArray(array){
 
 // Load questions
 async function loadQuiz() {
-    const res = await fetch("/questions");
-    const data = await res.json();
+    try {
+        const res = await fetch("/questions");
+        const data = await res.json();
 
-    if (!data.success) return console.error("Failed to load questions");
+        if (!data.success) {
+            document.getElementById("quiz").innerHTML = "<p style='text-align:center'>Failed to load questions.</p>";
+            return;
+        }
 
-    const quizDiv = document.getElementById("quiz");
-    quizDiv.innerHTML = "";
+        questions = data.questions; // assign global questions array
+        let html = "";
+        let nav = "";
 
-    data.questions.forEach(q => {
-        quizDiv.innerHTML += `
-            <div>
-                <p>${q.question}</p>
-                <label><input type="radio" name="q${q.id}" value="A"> ${q.optionA}</label>
-                <label><input type="radio" name="q${q.id}" value="B"> ${q.optionB}</label>
-                <label><input type="radio" name="q${q.id}" value="C"> ${q.optionC}</label>
-                <label><input type="radio" name="q${q.id}" value="D"> ${q.optionD}</label>
-            </div>
-        `;
-    });
+        questions.forEach((q, i) => {
+            let opts = [
+                {key:'A',text:q.optionA},
+                {key:'B',text:q.optionB},
+                {key:'C',text:q.optionC},
+                {key:'D',text:q.optionD}
+            ];
+            opts = shuffleArray(opts);
+
+            html += `<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
+            opts.forEach(opt=>{
+                html += `<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`;
+            });
+            html += "</div>";
+
+            nav += `<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
+        });
+
+        document.getElementById("quiz").innerHTML = html;
+        document.getElementById("navButtons").innerHTML = nav;
+
+        restoreAnswers();
+        updateProgress();
+
+    } catch(err){
+        console.error(err);
+        document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>";
+    }
 }
 
       // Randomize options
