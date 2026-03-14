@@ -91,6 +91,9 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   </div>
 
   <!-- Questions -->
+  <button onclick="deleteAllQuestions()" style="background:red;margin-bottom:10px;">
+Delete All Questions
+</button>
   <div id="questions-section" style="display:none;">
     <h3>Manage Questions</h3>
     <div class="search-box">
@@ -230,7 +233,43 @@ async function deleteQuestion(id){
     if(data.success) fetchQuestions(); else alert('Failed');
   }
 }
+//-------------- DELETE ALL QUESTIONS ----------------
+  async function deleteAllQuestions(){
 
+if(!confirm("Are you sure you want to delete ALL questions? This cannot be undone.")){
+return;
+}
+
+try{
+
+const res = await fetch("/admin/delete-all-questions",{
+method:"DELETE"
+});
+
+const data = await res.json();
+
+if(data.success){
+
+alert("All questions deleted successfully");
+
+fetchQuestions();
+fetchDashboard();
+
+}else{
+
+alert("Failed to delete questions");
+
+}
+
+}catch(err){
+
+console.error(err);
+alert("Server error");
+
+}
+
+}
+  
   // ------------------ ADD QUESTION ------------------
 document.getElementById("question-form").addEventListener("submit", async function(e){
   e.preventDefault();
