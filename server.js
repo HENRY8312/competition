@@ -235,17 +235,26 @@ app.delete("/admin/student/:id", (req, res) => {
 
 // --- GET ALL REGISTERED STUDENTS ---
 app.get("/admin/students", (req, res) => {
-    const sql = `
-        SELECT students.id, students.name, students.email, students.mobile, students.parish,
-        IFNULL(results.score,0) AS score
-        FROM students
-        LEFT JOIN results ON students.id = results.student_id
-        ORDER BY students.id ASC
-    `;
-    db.query(sql, (err, result) => {
-        if (err) return res.json({ success: false });
-        res.json({ success: true, students: result });
+
+    const sql = "SELECT id, name, email, mobile, student_class, parish, Years_watchman, score FROM students";
+
+    db.query(sql, (err, results) => {
+
+        if (err) {
+            console.log(err);
+            return res.json({
+                success: false,
+                message: "Failed to fetch students"
+            });
+        }
+
+        res.json({
+            success: true,
+            students: results
+        });
+
     });
+
 });
 
 // ------------------- SERVER -------------------
