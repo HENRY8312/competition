@@ -3,50 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mathematics Competition</title>
+<title>Mathematics Competition Dashboard</title>
 <style>
-/* --- GLOBAL --- */
-* {margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI", Arial, sans-serif;}
-body {background: radial-gradient(circle at top left,#001f44,#003366); color:#fff; padding:20px;}
-.container {max-width:950px; margin:auto; background:#0d1b2a; padding:30px; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5);}
-h2 {text-align:center; font-size:32px; margin-bottom:20px; color:#00ffff; text-shadow:0 0 10px #00ffff,0 0 20px #ff00ff;}
-/* --- TIMER --- */
-#timer {text-align:center; font-size:26px; font-weight:bold; margin-bottom:20px; color:#ff0066; text-shadow:0 0 5px #ff66aa,0 0 15px #ff00ff,0 0 25px #ff66ff;}
+/* --- GLOBAL STYLES --- */
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI", Arial, sans-serif;}
+body{background:#0a0f2c;color:#fff;padding:0;margin:0;}
+.container{max-width:1100px;margin:80px auto 40px auto;background:#0f1a3b;padding:30px;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.5);}
+h2{font-size:32px;text-align:center;margin-bottom:20px;color:#00fff7;text-shadow:0 0 5px #00fff7,0 0 15px #ff00ff;}
+
+/* --- HEADER & TIMER --- */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;}
+.header h2{margin:0;font-size:28px;}
+#timer{font-size:22px;font-weight:bold;color:#ff4081;text-shadow:0 0 5px #ff66aa,0 0 15px #ff0080;}
 /* --- PROGRESS BAR --- */
-.progress-container {width:100%; background:#111; border-radius:12px; margin-bottom:25px; overflow:hidden; box-shadow:0 0 10px #00ffff inset;}
-.progress-bar {height:14px; width:0%; background:linear-gradient(90deg,#ff0066,#00ffff); box-shadow:0 0 10px #ff00ff,0 0 15px #00ffff; transition: width 0.3s ease;}
-/* --- NAV BUTTONS --- */
-.nav {text-align:center; margin-bottom:25px; flex-wrap:wrap; display:flex; justify-content:center; gap:5px;}
-.nav button {padding:10px 14px; border:none; background:#222; color:#fff; cursor:pointer; border-radius:8px; font-weight:bold; font-size:16px; box-shadow:0 0 5px #00ffff; transition:0.3s;}
-.nav button:hover {background:#00ffff; color:#222; box-shadow:0 0 15px #00ffff,0 0 25px #66ffcc;}
-.nav button.answered {background:#28a745; color:#fff; box-shadow:0 0 10px #28a745,0 0 20px #00ffcc;}
+.progress-container{width:100%;background:#111;border-radius:12px;margin-bottom:25px;overflow:hidden;box-shadow:0 0 8px #00fff7 inset;}
+.progress-bar{height:14px;width:0%;background:linear-gradient(90deg,#00fff7,#ff4081);transition:width 0.3s ease;box-shadow:0 0 8px #00fff7,0 0 15px #ff4081;}
+/* --- NAVIGATION BUTTONS --- */
+.nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:30px;}
+.nav button{padding:10px 14px;border:none;background:#222;color:#fff;cursor:pointer;border-radius:8px;font-weight:bold;font-size:16px;box-shadow:0 0 5px #00fff7;transition:all 0.3s;}
+.nav button:hover{background:#00fff7;color:#222;box-shadow:0 0 15px #00fff7,0 0 25px #ff4081;}
+.nav button.answered{background:#28a745;color:#fff;box-shadow:0 0 10px #28a745,0 0 20px #00ffcc;}
+
 /* --- QUESTIONS --- */
-.question {background:#111; padding:18px; border-radius:10px; margin-bottom:20px; box-shadow:0 0 15px #ff00ff,0 0 25px #00ffff; opacity:0; transform:translateY(20px); animation:fadeIn 0.6s forwards;}
-.question h3 {margin-bottom:12px; color:#00ffff; text-shadow:0 0 5px #00ffff;}
-label {display:block; padding:10px; cursor:pointer; border-radius:6px; background:#222; margin-bottom:8px; transition:0.3s; color:#fff;}
-label:hover {background:#333; box-shadow:0 0 8px #ff00ff,0 0 15px #00ffff;}
-input[type=radio] {margin-right:10px; accent-color:#00ffff;}
+.question{background:#131a3d;padding:18px;border-radius:10px;margin-bottom:22px;box-shadow:0 0 12px #00fff7,0 0 20px #ff4081;opacity:0;transform:translateY(20px);animation:fadeIn 0.6s forwards;}
+.question h3{margin-bottom:12px;color:#00fff7;}
+label{display:block;padding:10px;cursor:pointer;border-radius:6px;background:#222;margin-bottom:8px;transition:0.3s;color:#fff;}
+label:hover{background:#333;box-shadow:0 0 8px #00fff7,0 0 15px #ff4081;}
+input[type=radio]{margin-right:10px;accent-color:#00fff7;}
+
 /* --- SUBMIT BUTTON --- */
-button.submit {display:block; margin:30px auto; padding:16px 36px; font-size:18px; background:linear-gradient(45deg,#ff0066,#00ffff); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; box-shadow:0 0 10px #ff0066,0 0 20px #00ffff; transition:all 0.3s ease;}
-button.submit:hover {transform:scale(1.08); box-shadow:0 0 25px #ff66aa,0 0 35px #66ffff;}
-/* --- MEDIA --- */
+button.submit{display:block;margin:30px auto;padding:16px 36px;font-size:18px;background:linear-gradient(45deg,#00fff7,#ff4081);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:bold;box-shadow:0 0 12px #00fff7,0 0 20px #ff4081;transition:all 0.3s;}
+button.submit:hover{transform:scale(1.08);box-shadow:0 0 25px #00fff7,0 0 35px #ff4081;}
+
+/* --- MEDIA RESPONSIVE --- */
 @media(max-width:768px){
-  .container{padding:20px;}
+  .container{padding:20px;margin:60px 10px 20px 10px;}
+  .header{flex-direction:column;align-items:center;gap:10px;}
   .question h3{font-size:18px;}
   label{font-size:16px;}
-  .nav button{padding:8px 12px; font-size:14px;}
+  .nav button{padding:8px 12px;font-size:14px;}
 }
+
 /* --- ANIMATIONS --- */
-@keyframes fadeIn {to {opacity:1; transform:translateY(0);}}
+@keyframes fadeIn{to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
 <body>
+
 <div class="container">
-  <h2>Mathematics Competition</h2>
-  <div id="timer">Time: 60:00</div>
-  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="header">
+    <h2>Mathematics Competition</h2>
+    <div id="timer">Time: 60:00</div>
+  </div>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
   <div class="nav" id="navButtons"></div>
+
   <div id="quiz"></div>
+
   <button class="submit" onclick="submitQuiz()">Submit Answers</button>
 </div>
 
@@ -58,7 +75,7 @@ window.addEventListener("beforeunload",()=>localStorage.removeItem("quizActive")
 document.addEventListener("contextmenu", e=>e.preventDefault());
 document.addEventListener("copy", e=>e.preventDefault());
 document.onkeydown=function(e){
-  if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && ['I','J'].includes(String.fromCharCode(e.keyCode))) || (e.ctrlKey && e.keyCode==85)) return false;
+  if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85)) return false;
 };
 document.addEventListener("visibilitychange", ()=>{
   if(document.hidden){ alert("You left the quiz page. Quiz will be submitted."); submitQuiz(); }
@@ -102,8 +119,8 @@ async function loadQuiz() {
         let html = "";
         let nav = "";
 
-        questions.forEach((q, i) => {
-            let opts = [
+        questions.forEach((q,i)=>{
+            let opts=[
                 {key:'A',text:q.optionA},
                 {key:'B',text:q.optionB},
                 {key:'C',text:q.optionC},
@@ -143,10 +160,10 @@ function saveAnswer(id,value){
 
 function restoreAnswers(){
   Object.keys(answers).forEach(key=>{
-    const input = document.querySelector(`input[name="${key}"][value="${answers[key]}"]`);
+    const input=document.querySelector(`input[name="${key}"][value="${answers[key]}"]`);
     if(input) input.checked=true;
-    const qid = key.replace("q","");
-    const navBtn = document.getElementById("nav"+qid);
+    const qid=key.replace("q","");
+    const navBtn=document.getElementById("nav"+qid);
     if(navBtn) navBtn.classList.add("answered");
   });
 }
@@ -165,17 +182,17 @@ function scrollToQuestion(id){
 window.onbeforeunload=function(){ return "You may lose your quiz progress"; }
 
 async function submitQuiz(){
-  const studentId = localStorage.getItem("studentId");
-  const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
-  if(!studentId || Object.keys(savedAnswers).length === 0) return alert("No answers to submit or student not logged in");
+  const studentId=localStorage.getItem("studentId");
+  const savedAnswers=JSON.parse(localStorage.getItem("answers")||"{}");
+  if(!studentId||Object.keys(savedAnswers).length===0) return alert("No answers to submit or student not logged in");
 
   try{
-    const res = await fetch("/submitQuiz",{
+    const res=await fetch("/submitQuiz",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({studentId,answers:savedAnswers})
     });
-    const data = await res.json();
+    const data=await res.json();
 
     localStorage.removeItem("answers");
     localStorage.removeItem("quizOrder");
@@ -186,7 +203,7 @@ async function submitQuiz(){
       alert("Your score: "+data.score);
       window.location="leaderboard.html";
     } else {
-      alert("Submission failed: "+(data.message || "Unknown error"));
+      alert("Submission failed: "+(data.message||"Unknown error"));
     }
   }catch(err){ console.error(err); alert("Error submitting quiz"); }
 }
