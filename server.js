@@ -273,6 +273,21 @@ app.delete("/admin/question/:id", (req, res) => {
     });
 });
 
+//------ DELETE ALL QUESTIONS-------------------
+app.delete("/admin/delete-all-questions",(req,res)=>{
+
+db.query("DELETE FROM questions",(err,result)=>{
+
+if(err){
+console.log(err);
+return res.json({success:false});
+}
+
+res.json({success:true});
+
+});
+
+});
 // --- DELETE STUDENT ---
 app.delete("/admin/student/:id", (req, res) => {
     const id = req.params.id;
