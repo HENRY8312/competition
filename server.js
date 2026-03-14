@@ -10,6 +10,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // serve static files
 
+// ---------------- QUIZ SCHEDULE ----------------
+
+const quizStartTime = new Date("2026-03-14T06:30:00");
+const quizEndTime = new Date("2026-03-15T11:00:00");
+
 // ------------------- DATABASE -------------------
 const db = mysql.createConnection({
     host: "sql8.freesqldatabase.com",
@@ -58,6 +63,15 @@ app.get("/test-db", (req, res) => {
     });
 });
 
+// ------ QUIZ TIMER ----------
+app.get("/quizTime",(req,res)=>{
+
+res.json({
+startTime:quizStartTime,
+endTime:quizEndTime
+});
+
+});
 // --- REGISTER STUDENT ---
 app.post("/register", (req, res) => {
 
