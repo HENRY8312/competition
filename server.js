@@ -60,30 +60,71 @@ app.get("/test-db", (req, res) => {
 
 // --- REGISTER STUDENT ---
 app.post("/register", (req, res) => {
+
     const { name, email, phone, studentClass, parish, yearsWatchman, password } = req.body;
+
+    // Check if all fields are provided
     if (!name || !email || !phone || !studentClass || !parish || !yearsWatchman || !password) {
-        return res.json({ success: false, message: "All fields required" });
+        return res.json({
+            success: false,
+            message: "All fields required"
+        });
     }
 
-    db.query(
-        "SELECT * FROM students WHERE name=? OR email=? OR mobile=?",
-        [name, email, phone],
-        (err, results) => {
-            if (err) return res.json({ success: false, message: "Registration failed" });
-            if (results.length > 0) return res.json({ success: false, message: "Student already exists" });
+    // Check if student already exists
+    const checkQuery = "SELECT * FROM students WHERE name=? OR email=? OR mobile=?";
 
-            db.query(
-                "INSERT INTO students (name,email,mobile,class,parish,Years_watchman,password) VALUES (?,?,?,?,?,?,?)",
-                [name,email,phone,studentClass,parish,yearsWatchman,password],
-                (err2, result) => {
-                    if (err2) return res.json({ success: false, message: "Registration failed" });
-                    res.json({ success: true, message: "Registered successfully", studentId: result.insertId });
-                }
-            );
+    db.query(checkQuery, [name, email, phone], (err, results) => {
+
+        if (err) {
+            console.log("SELECT ERROR:", err);
+            return res.json({
+                success: false,
+                message: "Registration failed",
+                error: err
+            });
         }
-    );
-});
 
+        if (results.length > 0) {
+            return res.json({
+                success: false,
+                message: "Student already exists"
+            });
+        }
+
+        // Insert new student
+        const insertQuery = `
+            INSERT INTO students 
+            (name, email, mobile, student_class, parish, Years_watchman, password) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        db.query(
+            insertQuery,
+            [name, email, phone, studentClass, parish, yearsWatchman, password],
+            (err2, result) => {
+
+                if (err2) {
+                    console.log("INSERT ERROR:", err2);
+                    return res.json({
+                        success: false,
+                        message: "Registration failed",
+                        error: err2
+                    });
+                }
+
+                res.json({
+                    success: true,
+                    message: "Registered successfully",
+                    studentId: result.insertId
+                });
+
+            }
+        );
+
+    });
+
+});
 // --- STUDENT LOGIN ---
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
