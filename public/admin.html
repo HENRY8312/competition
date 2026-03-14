@@ -231,6 +231,52 @@ async function deleteQuestion(id){
   }
 }
 
+  // ------------------ ADD QUESTION ------------------
+document.getElementById("question-form").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const question = document.getElementById("questionText").value;
+  const optionA = document.getElementById("optionA").value;
+  const optionB = document.getElementById("optionB").value;
+  const optionC = document.getElementById("optionC").value;
+  const optionD = document.getElementById("optionD").value;
+  const answer = document.getElementById("correctAnswer").value;
+
+  try{
+    const res = await fetch("/admin/add-question",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        question,
+        optionA,
+        optionB,
+        optionC,
+        optionD,
+        answer
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      alert("Question added successfully");
+
+      document.getElementById("question-form").reset();
+
+      fetchQuestions(); // reload questions table
+      fetchDashboard(); // update total questions
+    }else{
+      alert("Failed to add question");
+    }
+
+  }catch(err){
+    console.error(err);
+    alert("Server error while adding question");
+  }
+});
+
 // ------------------ STUDENTS ------------------
 async function fetchStudents(){
   try{
