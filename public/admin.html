@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel - Mathematics Competition</title>
 
-<!-- ================= CSS ================= -->
+<!-- ================= NEON CSS ================= -->
 <style>
 /* --- Global Reset --- */
 * {
@@ -15,58 +15,56 @@
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-/* --- Body Background --- */
+/* --- Body Neon Dark Theme --- */
 body {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #333;
+  background: #0f0f0f;
+  color: #fff;
   padding: 20px;
   min-height: 100vh;
-  transition: all 0.3s ease;
 }
 
-/* --- Headings --- */
+/* --- Headings Neon Glow --- */
 h2, h3 {
   text-align: center;
   margin-bottom: 20px;
-  color: #fff;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+  color: #00fff7;
+  text-shadow: 0 0 5px #00fff7, 0 0 10px #00fff7, 0 0 20px #00fff7;
+  letter-spacing: 1px;
 }
 
 /* --- Container / Card --- */
 .container, .login-box {
-  background: #fff;
+  background: #1c1c1c;
   border-radius: 16px;
   padding: 30px;
   max-width: 1100px;
   margin: 20px auto;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  box-shadow: 0 0 20px #00fff7, 0 0 40px #00fff7 inset;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .container:hover, .login-box:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  box-shadow: 0 0 30px #ff00ff, 0 0 60px #ff00ff inset;
 }
 
-/* --- Forms --- */
-form {
-  margin-bottom: 40px;
-}
-
+/* --- Forms Inputs --- */
 input, select, textarea, button {
   width: 100%;
   padding: 14px;
   margin: 10px 0;
   border-radius: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #00fff7;
+  background: #0f0f0f;
+  color: #fff;
   font-size: 16px;
   transition: all 0.3s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #764ba2;
-  box-shadow: 0 0 8px rgba(118,75,162,0.4);
+  border-color: #ff00ff;
+  box-shadow: 0 0 10px #ff00ff;
 }
 
 textarea {
@@ -74,23 +72,25 @@ textarea {
   resize: vertical;
 }
 
-/* --- Buttons --- */
+/* --- Buttons Neon Glow --- */
 button {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(45deg, #00fff7, #ff00ff);
   color: #fff;
   border: none;
   cursor: pointer;
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   transition: all 0.3s ease;
+  box-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
 }
 
 button:hover {
-  background: linear-gradient(135deg, #764ba2, #667eea);
   transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 0 20px #00fff7, 0 0 40px #ff00ff, 0 0 60px #ff00ff inset;
 }
 
-/* --- Table Styling --- */
+/* --- Table Styling Neon --- */
 .table-wrapper {
   overflow-x: auto;
   margin-bottom: 40px;
@@ -102,7 +102,6 @@ table {
   border-radius: 12px;
   overflow: hidden;
   min-width: 700px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 th, td {
@@ -112,18 +111,23 @@ th, td {
 }
 
 th {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #ff00ff;
   color: #fff;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-shadow: 0 0 5px #fff, 0 0 10px #fff;
 }
 
 tr:nth-child(even) {
-  background: #f7f7f7;
+  background: #1c1c1c;
+}
+
+tr:nth-child(odd) {
+  background: #111;
 }
 
 tr:hover {
-  background: #e0d4f7;
+  background: #00fff7;
+  color: #000;
   transform: scale(1.01);
   transition: all 0.2s ease;
 }
@@ -138,7 +142,6 @@ tr:hover {
   width: auto;
   padding: 14px 30px;
   margin: 10px;
-  font-size: 16px;
 }
 
 /* --- Mobile Responsive --- */
@@ -147,25 +150,15 @@ tr:hover {
     padding: 20px;
   }
 
-  h2 {
-    font-size: 24px;
-  }
+  h2 { font-size: 24px; }
+  h3 { font-size: 18px; }
 
-  h3 {
-    font-size: 18px;
-  }
-
-  table {
-    font-size: 12px;
-  }
-
-  input, select, textarea, button {
-    font-size: 14px;
-    padding: 12px;
-  }
+  table { font-size: 12px; }
+  input, select, textarea, button { font-size: 14px; padding: 12px; }
 }
 </style>
 </head>
+
 <body>
 
 <h2>Admin Panel - Mathematics Competition</h2>
@@ -245,6 +238,7 @@ tr:hover {
     <button onclick="window.location='leaderboard.html'">View Leaderboard</button>
     <button onclick="logoutAdmin()">Logout</button>
   </div>
+
 </div>
 
 <!-- ================= JS ================= -->
