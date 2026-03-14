@@ -68,7 +68,6 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
 
   <!-- Sticky Top Status Bar -->
   <div class="top-bar">
-    <!-- Fixed Organizer Name -->
     <div>Organizer <span id="organizerName">WYEP</span></div>
     <div>Quiz: <span id="quizName">Mathematics Competition</span></div>
     <div>Total Questions: <span id="totalQuestions">0</span></div>
@@ -89,7 +88,6 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
 
 <script>
 // =================== ANTI-CHEAT ===================
-// Removed single-tab restriction to allow multiple students simultaneously
 document.addEventListener("contextmenu", e=>e.preventDefault());
 document.addEventListener("copy", e=>e.preventDefault());
 document.onkeydown=function(e){
@@ -103,11 +101,8 @@ document.addEventListener("visibilitychange", ()=>{
   }
 });
 
-// =================== QUIZ LOGIC ===================
+// =================== GLOBAL TIMER ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
-let questions = [];
-let answers = JSON.parse(localStorage.getItem("answers") || "{}");
-
 function startTimer(){
   const timerElement=document.getElementById("timer");
   const interval=setInterval(()=>{
@@ -119,6 +114,10 @@ function startTimer(){
   },1000);
 }
 startTimer();
+
+// =================== QUIZ LOGIC ===================
+let questions = [];
+let answers = JSON.parse(localStorage.getItem("answers") || "{}");
 
 function shuffleArray(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];} return array;}
 
@@ -177,8 +176,11 @@ async function submitQuiz(){
   const studentId = localStorage.getItem("studentId");
   const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
 
-  if(!studentId || Object.keys(savedAnswers).length === 0) 
-    return alert("No answers to submit or student not logged in");
+  // Student without answers
+  if(Object.keys(savedAnswers).length === 0){
+    alert("No answers to submit");
+    return;
+  }
 
   try {
     const res = await fetch("/submitQuiz", {
@@ -190,12 +192,9 @@ async function submitQuiz(){
 
     // Clear local storage after submission
     localStorage.removeItem("answers");
-    localStorage.removeItem("quizOrder");
-    localStorage.removeItem("quizTime");
-    localStorage.removeItem("quizActive");
 
     if(data.success){
-      alert(`Your score is: ${data.score}`);
+      alert(`✅ Your score is: ${data.score}`);
       window.location = "leaderboard.html";
     } else {
       alert(`Submission failed: ${data.message || "Unknown error"}`);
@@ -203,7 +202,7 @@ async function submitQuiz(){
 
   } catch(err){
     console.error(err);
-    alert(`Error submitting quiz`);
+    alert("Error submitting quiz");
   }
 }
 </script>
