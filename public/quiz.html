@@ -113,21 +113,27 @@ function shuffleArray(array){
 }
 
 // Load questions
-async function loadQuestions(){
-  try{
+async function loadQuiz() {
     const res = await fetch("/questions");
-    questions = await res.json();
+    const data = await res.json();
 
-    // Random question order
-    if(!questionOrder.length){
-      questionOrder = Array.from({length: questions.length}, (_,i)=>i);
-      shuffleArray(questionOrder);
-      localStorage.setItem("quizOrder", JSON.stringify(questionOrder));
-    }
+    if (!data.success) return console.error("Failed to load questions");
 
-    let html="", nav="";
-    questionOrder.forEach((qIndex,i)=>{
-      const q = questions[qIndex];
+    const quizDiv = document.getElementById("quiz");
+    quizDiv.innerHTML = "";
+
+    data.questions.forEach(q => {
+        quizDiv.innerHTML += `
+            <div>
+                <p>${q.question}</p>
+                <label><input type="radio" name="q${q.id}" value="A"> ${q.optionA}</label>
+                <label><input type="radio" name="q${q.id}" value="B"> ${q.optionB}</label>
+                <label><input type="radio" name="q${q.id}" value="C"> ${q.optionC}</label>
+                <label><input type="radio" name="q${q.id}" value="D"> ${q.optionD}</label>
+            </div>
+        `;
+    });
+}
 
       // Randomize options
       let opts = [
