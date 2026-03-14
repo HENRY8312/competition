@@ -102,7 +102,8 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
     <div id="previewArea"></div>
     <button id="saveUploadBtn" style="display:none" onclick="saveUploadedQuestions()">Save Questions</button>
 
-    <div class="table-wrapper" style="margin-top:15px;">
+    <h4>All Questions</h4>
+    <div class="table-wrapper">
       <table>
         <thead>
           <tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>Correct</th><th>Actions</th></tr>
@@ -194,18 +195,43 @@ async function fetchDashboard(){
   } catch(e){ console.error(e); }
 }
 
-// ------------------ QUESTIONS SECTION ------------------
-// Same code as previous for fetchQuestions, inline edit, add, delete, upload, save
-// Include filterQuestions function
+// ------------------ QUESTIONS ------------------
+async function fetchQuestions(){
+  try{
+    const res = await fetch('/admin/questions');
+    const data = await res.json();
+    const tbody = document.getElementById('questionsTableBody');
+    tbody.innerHTML='';
+    if(data.success && data.questions.length>0){
+      data.questions.forEach((q,i)=>{
+        tbody.innerHTML += `<tr>
+          <td>${i+1}</td><td>${q.question}</td><td>${q.optionA}</td>
+          <td>${q.optionB}</td><td>${q.optionC}</td><td>${q.optionD}</td>
+          <td>${q.answer}</td>
+          <td>
+            <button onclick="deleteQuestion(${q.id})">Delete</button>
+          </td>
+        </tr>`;
+      });
+    } else tbody.innerHTML="<tr><td colspan='8'>No questions yet</td></tr>";
+  } catch(e){ console.error(e); }
+}
 function filterQuestions(){
-  const filter = document.getElementById('questionSearch').value.toLowerCase();
+  const f = document.getElementById('questionSearch').value.toLowerCase();
   document.querySelectorAll('#questionsTableBody tr').forEach(row=>{
-    const values = Array.from(row.querySelectorAll('td span')).map(s=>s.innerText.toLowerCase());
-    row.style.display = values.some(v=>v.includes(filter)) ? '' : 'none';
+    const values = Array.from(row.querySelectorAll('td')).map(td=>td.innerText.toLowerCase());
+    row.style.display = values.some(v=>v.includes(f)) ? '' : 'none';
   });
 }
+async function deleteQuestion(id){
+  if(confirm('Delete this question?')){
+    const res = await fetch(`/admin/question/${id}`,{method:'DELETE'});
+    const data = await res.json();
+    if(data.success) fetchQuestions(); else alert('Failed');
+  }
+}
 
-// ------------------ STUDENTS SECTION ------------------
+// ------------------ STUDENTS ------------------
 async function fetchStudents(){
   try{
     const res = await fetch('/admin/students');
@@ -215,8 +241,8 @@ async function fetchStudents(){
     if(data.success && data.students.length>0){
       data.students.forEach((s,i)=>{
         tbody.innerHTML += `<tr>
-          <td>${i+1}</td><td>${s.name}</td><td>${s.email||'-'}</td><td>${s.mobile||'-'}</td>
-          <td>${s.parish||'-'}</td><td>${s.score||0}</td>
+          <td>${i+1}</td><td>${s.name}</td><td>${s.email||'-'}</td>
+          <td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score||0}</td>
         </tr>`;
       });
     } else tbody.innerHTML="<tr><td colspan='6'>No students yet</td></tr>";
@@ -238,16 +264,15 @@ async function fetchLeaderboard(){
     const tbody = document.getElementById('leaderboardTable');
     tbody.innerHTML='';
     if(data.success && data.leaderboard.length>0){
+      data.leaderboard.sort((a,b)=>b.score-a.score);
       data.leaderboard.forEach((s,i)=>{
         const cls = (i<10)?'top10':'';
-        tbody.innerHTML += `<tr class="${cls}"><td>${i+1}</td><td>${s.name}</td><td>${s.email||'-'}</td>
-          <td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score}</td></tr>`;
+        tbody.innerHTML += `<tr class="${cls}"><td>${i+1}</td><td>${s.name}</td>
+          <td>${s.email||'-'}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score}</td></tr>`;
       });
     } else tbody.innerHTML="<tr><td colspan='6'>No data</td></tr>";
   } catch(e){ console.error(e); }
 }
-
-// Download leaderboard
 function downloadLeaderboard(){
   const table=document.getElementById('leaderboardTable');
   let csv=[];
