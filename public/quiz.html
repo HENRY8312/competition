@@ -5,43 +5,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mathematics Competition</title>
 <style>
+/* --- GLOBAL STYLES --- */
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI", Arial, sans-serif;}
 body{background:#f5f6fa;color:#333;padding:0;margin:0;}
 .container{max-width:900px;margin:0 auto;padding:0 20px;}
+
+/* --- STICKY TOP BAR --- */
 .top-bar{
-  position:sticky; top:0; z-index:100; background:#40739e; color:white; padding:15px 20px;
-  display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
-  box-shadow:0 3px 8px rgba(0,0,0,0.15); border-bottom-left-radius:10px; border-bottom-right-radius:10px;
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:#40739e;
+  color:white;
+  padding:15px 20px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  border-bottom-left-radius:10px;
+  border-bottom-right-radius:10px;
 }
 .top-bar div{margin:5px 0;font-size:16px;}
 .top-bar div span{font-weight:bold;}
+
+/* --- TIMER & PROGRESS --- */
 #timer{font-weight:bold;background:#f1f2f6;color:#e84118;padding:8px 12px;border-radius:8px;}
 .progress-container{flex:1;margin-left:20px;height:14px;background:#e0e0e0;border-radius:10px;overflow:hidden;margin-top:5px;}
 .progress-bar{height:14px;width:0%;background:linear-gradient(90deg,#40739e,#2f3640);transition:width 0.3s ease;border-radius:10px;}
+
+/* --- NAV BUTTONS --- */
 .nav{margin:15px 0;text-align:center;flex-wrap:wrap;}
 .nav button{margin:4px;padding:8px 12px;border:none;background:#f1f2f6;color:#2f3640;cursor:pointer;border-radius:6px;font-weight:bold;transition:background 0.3s, transform 0.2s;}
 .nav button:hover{background:#dcdde1;}
 .nav button.answered{background:#27ae60;color:white;animation:flashGreen 0.5s ease;}
-@keyframes flashGreen{0%{background:#2ecc71;}50%{background:#27ae60;}100%{background:#27ae60;}}
+@keyframes flashGreen{
+  0%{background:#2ecc71;}
+  50%{background:#27ae60;}
+  100%{background:#27ae60;}
+}
+
+/* --- QUESTIONS --- */
 .question{background:#f9f9f9;padding:18px;border-radius:10px;margin-bottom:20px;box-shadow:0 3px 8px rgba(0,0,0,0.05);}
 .question h3{margin-bottom:12px;color:#2f3640;}
 label{display:block;padding:10px;cursor:pointer;border-radius:6px;background:#f1f2f6;margin-bottom:10px;transition:background 0.2s;}
 label:hover{background:#dcdde1;}
 input[type=radio]{margin-right:10px;}
+
+/* --- SUBMIT BUTTON --- */
 button.submit{display:block;margin:25px auto 50px auto;padding:14px 32px;font-size:18px;background:#40739e;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;transition:background 0.3s, transform 0.2s;}
 button.submit:hover{background:#2f3640;transform:scale(1.03);}
-#reviewModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999;justify-content:center;align-items:center;}
-#reviewContent{background:#fff;padding:20px;border-radius:10px;max-width:700px;max-height:80vh;overflow-y:auto;}
-#reviewContent h3{text-align:center;margin-bottom:20px;}
-#reviewContent ul{list-style:none;margin:0;padding:0;}
-#reviewContent li{padding:10px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;}
-#reviewContent li.answered{background:#dff9e0; color:#27ae60;}
-#reviewContent li.unanswered{background:#ffe0e0; color:#e84118;}
-#reviewContent li span{font-weight:bold;}
-#reviewButtons{margin-top:20px;text-align:center;}
-#reviewButtons button{padding:10px 20px;margin:0 10px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}
-#confirmBtn{background:#27ae60;color:white;}
-#editBtn{background:#e84118;color:white;}
+
+/* --- REVIEW MODAL --- */
+#reviewModal{
+  position:fixed; top:0; left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);
+  display:none; justify-content:center; align-items:center; z-index:200;
+}
+#reviewContent{
+  background:white;padding:20px;border-radius:10px;width:90%;max-width:600px;
+  max-height:80%;overflow-y:auto;
+}
+#reviewContent h3{margin-bottom:15px;}
+#reviewContent ul{list-style:none;padding-left:0;}
+#reviewContent li{margin-bottom:8px;}
+
+/* --- RESPONSIVE --- */
 @media(max-width:768px){
   .top-bar{flex-direction:column;align-items:flex-start;}
   .progress-container{margin-left:0;margin-top:10px;width:100%;}
@@ -51,146 +79,147 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
 <body>
 <div class="container">
 
+  <!-- Sticky Top Status Bar -->
   <div class="top-bar">
     <div>Organizer <span id="organizerName">WYEP</span></div>
     <div>Quiz: <span id="quizName">Mathematics Competition</span></div>
     <div>Total Questions: <span id="totalQuestions">0</span></div>
-    <div id="timer">Time: 60:00</div>
+    <div id="timer">Loading...</div>
     <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
   </div>
 
+  <!-- Navigation Buttons -->
   <div class="nav" id="navButtons"></div>
+
+  <!-- Questions -->
   <div id="quiz"></div>
-  <button class="submit" onclick="openReview()">Submit Answers</button>
+
+  <!-- Submit Button -->
+  <button class="submit" onclick="reviewBeforeSubmit()">Submit Answers</button>
 
 </div>
 
+<!-- Review Modal -->
 <div id="reviewModal">
   <div id="reviewContent">
     <h3>Review Your Answers</h3>
     <ul id="reviewList"></ul>
-    <div id="reviewButtons">
-      <button id="editBtn" onclick="closeReview()">Edit Answers</button>
-      <button id="confirmBtn" onclick="finalSubmit()">Confirm & Submit</button>
-    </div>
+    <button onclick="finalSubmit()">Confirm & Submit</button>
   </div>
 </div>
 
 <script>
-// Check if student already submitted
+// =================== ANTI-CHEAT ===================
+document.addEventListener("contextmenu", e=>e.preventDefault());
+document.addEventListener("copy", e=>e.preventDefault());
+document.onkeydown=function(e){
+  if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85))
+    return false;
+};
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){ alert("You left the quiz page. Quiz will be submitted."); reviewBeforeSubmit(); }
+});
+
+// =================== STUDENT LOGIN ===================
 const studentId = localStorage.getItem("studentId");
-const previousScore = localStorage.getItem("quizScore");
-
-if(previousScore){
-  document.body.innerHTML = `<div class="container" style="text-align:center;margin-top:50px;">
-    <h2>You have already submitted the quiz</h2>
-    <h3>Your Score: ${previousScore}</h3>
-  </div>`;
-} else {
-  // =================== GLOBAL TIMER ===================
-  let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
-  function startTimer(){
-    const timerElement=document.getElementById("timer");
-    const interval=setInterval(()=>{
-      let minutes=Math.floor(time/60), seconds=time%60;
-      timerElement.innerText=`Time: ${minutes}:${seconds<10?'0'+seconds:seconds}`;
-      time--;
-      localStorage.setItem("quizTime",time);
-      if(time<0){ clearInterval(interval); alert("Time is up! Submitting automatically"); finalSubmit(); }
-    },1000);
-  }
-  startTimer();
-
-  // =================== QUIZ LOGIC ===================
-  let questions = [];
-  let answers = JSON.parse(localStorage.getItem("answers") || "{}");
-
-  function shuffleArray(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];} return array;}
-
-  async function loadQuiz() {
-    try{
-      const res=await fetch("/questions");
-      const data=await res.json();
-      if(!data.success||!data.questions||data.questions.length===0){document.getElementById("quiz").innerHTML="<p style='text-align:center'>No questions available.</p>"; return;}
-      questions = data.questions;
-      document.getElementById("totalQuestions").textContent = questions.length;
-      let html="", nav="";
-      questions.forEach((q,i)=>{
-        let opts=[{key:'A',text:q.optionA},{key:'B',text:q.optionB},{key:'C',text:q.optionC},{key:'D',text:q.optionD}];
-        opts=shuffleArray(opts);
-        html+=`<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
-        opts.forEach(opt=>{html+=`<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`;});
-        html+="</div>";
-        nav+=`<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
-      });
-      document.getElementById("quiz").innerHTML=html;
-      document.getElementById("navButtons").innerHTML=nav;
-      restoreAnswers(); updateProgress();
-    }catch(err){console.error(err); document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>";}
-  }
-  loadQuiz();
-
-  function saveAnswer(id,value){
-    answers["q"+id]=value;
-    localStorage.setItem("answers",JSON.stringify(answers));
-    const btn=document.getElementById("nav"+id);
-    btn.classList.add("answered");
-    updateProgress();
-  }
-
-  function restoreAnswers(){
-    Object.keys(answers).forEach(key=>{
-      const input=document.querySelector(`input[name="${key}"][value="${answers[key]}"]`);
-      if(input) input.checked=true;
-      const qid=key.replace("q","");
-      const navBtn=document.getElementById("nav"+qid);
-      if(navBtn) navBtn.classList.add("answered");
-    });
-  }
-
-  function updateProgress(){
-    let total=questions.length;
-    let answered=Object.keys(answers).length;
-    document.querySelector(".progress-bar").style.width=(answered/total*100)+"%";
-  }
-
-  function scrollToQuestion(id){document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});}
-  window.onbeforeunload=function(){return "You may lose your quiz progress";}
-
-  // =================== REVIEW & FINAL SUBMIT ===================
-  function openReview(){
-    const reviewList = document.getElementById("reviewList");
-    reviewList.innerHTML = "";
-    questions.forEach((q,i)=>{
-      const answer = answers["q"+q.id];
-      const statusClass = answer ? "answered" : "unanswered";
-      const displayAnswer = answer || "Unanswered";
-      reviewList.innerHTML += `<li class="${statusClass}">Q${i+1}: ${q.question} <span>Answer: ${displayAnswer}</span></li>`;
-    });
-    document.getElementById("reviewModal").style.display = "flex";
-  }
-  function closeReview(){ document.getElementById("reviewModal").style.display = "none"; }
-
-  async function finalSubmit(){
-    const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
-
-    try {
-      const res = await fetch("/submitQuiz", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({studentId, answers: savedAnswers})
-      });
-      const data = await res.json();
-      localStorage.removeItem("answers");
-      localStorage.removeItem("quizTime");
-      if(data.success){
-        localStorage.setItem("quizScore", data.score); // Save score
-        alert(`✅ Your score is: ${data.score}`);
-        window.location = "index.html";
-      } else { alert(`Submission failed: ${data.message || "Unknown error"}`); }
-    } catch(err){console.error(err); alert("Error submitting quiz"); }
-  }
+if(!studentId){ alert("Student not logged in"); location.href="index.html"; }
+if(localStorage.getItem(`quizSubmitted_${studentId}`)){
+  const score = localStorage.getItem(`score_${studentId}`);
+  document.getElementById("quiz").innerHTML = `<p style="text-align:center;font-weight:bold;color:green;">
+    You have already submitted the quiz. Your score: ${score}</p>`;
+  document.querySelector("button.submit").style.display="none";
+  throw "Quiz already submitted";
 }
+
+// =================== QUIZ SCHEDULE ===================
+const quizStart = new Date("2026-03-15T10:00:00");
+const quizEnd   = new Date("2026-03-15T11:00:00");
+const timerElement = document.getElementById("timer");
+
+// =================== QUIZ LOGIC ===================
+let questions=[], answers=JSON.parse(localStorage.getItem(`answers_${studentId}`)||"{}");
+
+function startCountdown(){
+  const now = new Date();
+  if(now >= quizEnd){
+    timerElement.innerText="Quiz has ended. You cannot participate.";
+    document.querySelector("button.submit").disabled=true;
+    return;
+  }
+  if(now < quizStart){
+    let t = Math.floor((quizStart-now)/1000);
+    timerElement.innerText=`Quiz starts in ${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+    const preInterval = setInterval(()=>{
+      t--;
+      if(t<=0){ clearInterval(preInterval); loadQuizWithTimer(); return; }
+      timerElement.innerText=`Quiz starts in ${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+    },1000);
+  } else { loadQuizWithTimer(); }
+}
+
+function loadQuizWithTimer(){
+  loadQuiz();
+  let t = Math.floor((quizEnd-new Date())/1000);
+  const interval = setInterval(()=>{
+    if(t<=0){ clearInterval(interval); document.querySelectorAll("input[type=radio]").forEach(i=>i.disabled=true);
+               document.querySelector("button.submit").disabled=true; alert("Time is up!"); reviewBeforeSubmit(); return; }
+    let m=Math.floor(t/60), s=t%60;
+    timerElement.innerText=`Time: ${m}:${s<10?'0'+s:s}`;
+    t--;
+  },1000);
+}
+
+// =================== QUIZ FETCH ===================
+async function loadQuiz(){
+  try{
+    const res = await fetch("/questions");
+    const data = await res.json();
+    if(!data.success || !data.questions.length){document.getElementById("quiz").innerHTML="<p style='text-align:center'>No questions available.</p>"; return;}
+    questions = data.questions;
+    document.getElementById("totalQuestions").textContent = questions.length;
+    let html="", nav="";
+    questions.forEach((q,i)=>{
+      const opts = shuffleArray([{key:'A',text:q.optionA},{key:'B',text:q.optionB},{key:'C',text:q.optionC},{key:'D',text:q.optionD}]);
+      html+=`<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
+      opts.forEach(opt=>html+=`<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`);
+      html+="</div>";
+      nav+=`<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
+    });
+    document.getElementById("quiz").innerHTML=html;
+    document.getElementById("navButtons").innerHTML=nav;
+    restoreAnswers(); updateProgress();
+  } catch(e){console.error(e); document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>"; }
+}
+
+function saveAnswer(id,val){ answers["q"+id]=val; localStorage.setItem(`answers_${studentId}`,JSON.stringify(answers)); document.getElementById("nav"+id).classList.add("answered"); updateProgress();}
+function restoreAnswers(){ Object.keys(answers).forEach(k=>{ const i=document.querySelector(`input[name="${k}"][value="${answers[k]}"]`); if(i) i.checked=true; document.getElementById("nav"+k.replace("q",""))?.classList.add("answered"); });}
+function updateProgress(){ document.querySelector(".progress-bar").style.width=(Object.keys(answers).length/questions.length*100)+"%"; }
+function scrollToQuestion(id){document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});}
+function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;}
+
+// =================== REVIEW & FINAL SUBMIT ===================
+function reviewBeforeSubmit(){
+  const reviewList = document.getElementById("reviewList"); reviewList.innerHTML="";
+  questions.forEach((q,i)=>{
+    reviewList.innerHTML+=`<li>Q${i+1}: ${answers["q"+q.id]||"<span style='color:red'>Not answered</span>"}</li>`;
+  });
+  document.getElementById("reviewModal").style.display="flex";
+}
+async function finalSubmit(){
+  const res = await fetch("/submitQuiz",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studentId,answers})});
+  const data = await res.json();
+  if(data.success){
+    localStorage.setItem(`quizSubmitted_${studentId}`,true);
+    localStorage.setItem(`score_${studentId}`,data.score);
+    localStorage.removeItem(`answers_${studentId}`);
+    alert(`Your score is: ${data.score}`);
+    window.location="index.html";
+  } else alert("Submission failed.");
+}
+document.getElementById("reviewModal").addEventListener("click", e=>{if(e.target==document.getElementById("reviewModal")) document.getElementById("reviewModal").style.display="none";});
+
+// =================== START ===================
+startCountdown();
 </script>
 </body>
 </html>
