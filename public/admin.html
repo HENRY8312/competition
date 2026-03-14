@@ -24,7 +24,7 @@ body { display:flex; min-height:100vh; background:#f5f6fa; color:#333; }
 .card { background:#fff; flex:1 1 200px; padding:20px; border-radius:12px; box-shadow:0 8px 25px rgba(0,0,0,0.08); transition:transform .2s ease, box-shadow .2s ease; }
 .card:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(0,0,0,0.12); }
 .card h3 { margin-bottom:15px; font-weight:600; color:#192a56; }
-.card p { font-size:28px; font-weight:bold; color:#40739e; }
+.card p { font-size:18px; font-weight:bold; color:#40739e; }
 
 /* Tables */
 .table-wrapper { overflow-x:auto; margin-bottom:30px; }
@@ -50,6 +50,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   .dashboard-cards { flex-direction:column; }
 }
 #previewArea p { background:#f1f2f6; padding:8px; border-radius:6px; margin:5px 0; }
+#studentSearch { width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #dcdde1; }
 </style>
 </head>
 <body>
@@ -57,10 +58,10 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
 <!-- Sidebar -->
 <div class="sidebar">
   <h2>Dashboard</h2>
-  <a href="#" class="active" onclick="showSection('dashboard')">Home</a>
-  <a href="#" onclick="showSection('questions')">Questions</a>
-  <a href="#" onclick="showSection('students')">Students</a>
-  <a href="#" onclick="showSection('leaderboard')">Leaderboard</a>
+  <a href="#" class="active" onclick="showSection('dashboard', this)">Home</a>
+  <a href="#" onclick="showSection('questions', this)">Questions</a>
+  <a href="#" onclick="showSection('students', this)">Students</a>
+  <a href="#" onclick="showSection('leaderboard', this)">Leaderboard</a>
   <a href="#" onclick="logoutAdmin()">Logout</a>
 </div>
 
@@ -71,8 +72,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   <div id="dashboard-section">
     <div class="dashboard-cards">
       <div class="card"><h3>Total Questions</h3><p id="totalQuestions">0</p></div>
-      <div class="card"><h3>Total Students</h3><p id="totalStudents">0</p></div>
-      <div class="card"><h3>Average Score</h3><p id="averageScore">0</p></div>
+      <div class="card"><h3>Students by Parish</h3><p id="studentsByParish">-</p></div>
     </div>
     <h3>Top 5 Students (Leaderboard Preview)</h3>
     <div class="table-wrapper">
@@ -119,6 +119,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   <!-- Students -->
   <div id="students-section" style="display:none;">
     <h3>Registered Students</h3>
+    <input type="text" id="studentSearch" placeholder="Search by Name, Email, Phone, or Parish" oninput="filterStudents()">
     <div class="table-wrapper">
       <table>
         <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Parish</th></tr></thead>
@@ -144,9 +145,12 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
 </div>
 
 <script>
-// Section switch
-function showSection(section){
+let currentSidebarLink = document.querySelector('.sidebar a.active');
+function showSection(section, link){
   ['dashboard','questions','students','leaderboard'].forEach(s=>document.getElementById(s+'-section').style.display=(s===section)?'block':'none');
+  if(currentSidebarLink) currentSidebarLink.classList.remove('active');
+  currentSidebarLink = link;
+  currentSidebarLink.classList.add('active');
 }
 
 // Logout
@@ -169,23 +173,43 @@ async function fetchQuestions(){
 }
 
 // Fetch Students
+let studentsData = [];
 async function fetchStudents(){
   try {
     const res=await fetch(`/admin/students`);
     const data=await res.json();
-    const tbody=document.getElementById('studentsTableBody'); tbody.innerHTML='';
-    if(data.success && data.students.length>0){
-      data.students.forEach((s,i)=>tbody.innerHTML+=`<tr>
-        <td>${i+1}</td><td>${s.name}</td><td>${s.email}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td>
-      </tr>`);
-      document.getElementById('totalStudents').innerText=data.students.length;
-      const avg=Math.round(data.students.reduce((a,b)=>a+b.score,0)/data.students.length);
-      document.getElementById('averageScore').innerText=avg;
-    } else {
-      tbody.innerHTML="<tr><td colspan='7'>No students yet</td></tr>";
-      document.getElementById('totalStudents').innerText=0; document.getElementById('averageScore').innerText=0;
-    }
+    studentsData = data.students || [];
+    renderStudentsTable(studentsData);
+
+    // Calculate students by parish
+    const parishCount = {};
+    studentsData.forEach(s=>{ parishCount[s.parish] = (parishCount[s.parish]||0)+1; });
+    const parishText = Object.entries(parishCount).map(([p,c])=>`${p}: ${c}`).join(', ');
+    document.getElementById('studentsByParish').innerText = parishText || '-';
   } catch(e){ console.error(e); }
+}
+
+// Render Students Table
+function renderStudentsTable(data){
+  const tbody = document.getElementById('studentsTableBody');
+  tbody.innerHTML = '';
+  if(data.length>0){
+    data.forEach((s,i)=>tbody.innerHTML+=`<tr>
+      <td>${i+1}</td><td>${s.name}</td><td>${s.email}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td>
+    </tr>`);
+  } else tbody.innerHTML="<tr><td colspan='5'>No students yet</td></tr>";
+}
+
+// Filter Students
+function filterStudents(){
+  const query = document.getElementById('studentSearch').value.toLowerCase();
+  const filtered = studentsData.filter(s=>{
+    return (s.name && s.name.toLowerCase().includes(query)) ||
+           (s.email && s.email.toLowerCase().includes(query)) ||
+           (s.mobile && s.mobile.includes(query)) ||
+           (s.parish && s.parish.toLowerCase().includes(query));
+  });
+  renderStudentsTable(filtered);
 }
 
 // Fetch Leaderboard
@@ -204,7 +228,7 @@ async function fetchLeaderboard(){
   } catch(e){ console.error(e); }
 }
 
-// Add Question manually
+// Add, Delete, Upload, Save Question functions remain the same...
 document.getElementById('question-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const question=document.getElementById('questionText').value;
@@ -220,7 +244,6 @@ document.getElementById('question-form').addEventListener('submit', async e=>{
   } catch(e){ console.error(e); alert('Error'); }
 });
 
-// Delete Question
 async function deleteQuestion(id){ 
   if(confirm('Delete this question?')){
     const res=await fetch(`/admin/question/${id}`,{method:'DELETE'});
@@ -229,7 +252,6 @@ async function deleteQuestion(id){
   } 
 }
 
-// Upload Questions File
 async function uploadQuestions(){
   const fileInput = document.getElementById('questionFile');
   if(!fileInput.files[0]) return alert("Select a file");
@@ -243,7 +265,6 @@ async function uploadQuestions(){
   } else alert(data.message||'Upload failed');
 }
 
-// Save uploaded questions
 async function saveUploadedQuestions(){
   const res = await fetch('/saveUploadedQuestions',{method:'POST'});
   const data = await res.json();
@@ -251,7 +272,6 @@ async function saveUploadedQuestions(){
   else alert(data.message||'Save failed');
 }
 
-// Download Leaderboard
 function downloadLeaderboard(){
   const table=document.getElementById('leaderboardTable');
   let csv=[];
