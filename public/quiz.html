@@ -113,6 +113,8 @@ function shuffleArray(array){
 }
 
 // Load questions
+  let html = "";
+let nav = "";  // initialize before using +=
 async function loadQuiz() {
     try {
         const res = await fetch("/questions");
@@ -128,6 +130,14 @@ async function loadQuiz() {
         let nav = "";
 
         questions.forEach((q, i) => {
+    // build question HTML
+    html += `<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
+    // options shuffled and added here...
+    html += "</div>";
+
+    // navigation button
+    nav += `<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
+});
             let opts = [
                 {key:'A',text:q.optionA},
                 {key:'B',text:q.optionB},
