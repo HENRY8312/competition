@@ -49,6 +49,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   .main { padding:15px; }
   .dashboard-cards { flex-direction:column; }
 }
+#previewArea p { background:#f1f2f6; padding:8px; border-radius:6px; margin:5px 0; }
 </style>
 </head>
 <body>
@@ -85,13 +86,14 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   </div>
 
   <!-- Questions -->
-  <h3>Upload Questions (Word/PDF)</h3>
-<input type="file" id="questionFile" accept=".docx,.pdf">
-<button onclick="uploadQuestions()">Upload & Preview</button>
-<div id="previewArea"></div>
-<button id="saveUploadBtn" style="display:none" onclick="saveUploadedQuestions()">Save Questions</button>
   <div id="questions-section" style="display:none;">
-    <h3>Add Question</h3>
+    <h3>Upload Questions (Word/PDF)</h3>
+    <input type="file" id="questionFile" accept=".docx,.pdf">
+    <button onclick="uploadQuestions()">Upload & Preview</button>
+    <div id="previewArea"></div>
+    <button id="saveUploadBtn" style="display:none" onclick="saveUploadedQuestions()">Save Questions</button>
+
+    <h3>Add Question Manually</h3>
     <form id="question-form">
       <textarea id="questionText" placeholder="Enter question" required></textarea>
       <input type="text" id="optionA" placeholder="Option A" required>
@@ -104,6 +106,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
       </select>
       <button type="submit">Add Question</button>
     </form>
+
     <h3>All Questions</h3>
     <div class="table-wrapper">
       <table>
@@ -152,7 +155,8 @@ function logoutAdmin(){ localStorage.removeItem('adminLoggedIn'); location.reloa
 // Fetch Questions
 async function fetchQuestions(){
   try {
-    const res=await fetch(`/admin/questions`); const data=await res.json();
+    const res=await fetch(`/admin/questions`);
+    const data=await res.json();
     const tbody=document.getElementById('questionsTableBody'); tbody.innerHTML='';
     if(data.success && data.questions.length>0){
       data.questions.forEach((q,i)=>tbody.innerHTML+=`<tr>
@@ -167,11 +171,12 @@ async function fetchQuestions(){
 // Fetch Students
 async function fetchStudents(){
   try {
-    const res=await fetch(`/admin/students`); const data=await res.json();
+    const res=await fetch(`/admin/students`);
+    const data=await res.json();
     const tbody=document.getElementById('studentsTableBody'); tbody.innerHTML='';
     if(data.success && data.students.length>0){
       data.students.forEach((s,i)=>tbody.innerHTML+=`<tr>
-        <td>${i+1}</td><td>${s.name}</td><td>${s.email}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>
+        <td>${i+1}</td><td>${s.name}</td><td>${s.email}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td>
       </tr>`);
       document.getElementById('totalStudents').innerText=data.students.length;
       const avg=Math.round(data.students.reduce((a,b)=>a+b.score,0)/data.students.length);
@@ -186,7 +191,8 @@ async function fetchStudents(){
 // Fetch Leaderboard
 async function fetchLeaderboard(){
   try {
-    const res=await fetch(`/admin/leaderboard`); const data=await res.json();
+    const res=await fetch(`/admin/leaderboard`);
+    const data=await res.json();
     const preview=document.getElementById('leaderboardPreview'); const table=document.getElementById('leaderboardTable');
     preview.innerHTML=''; table.innerHTML='';
     if(data.success && data.leaderboard.length>0){
@@ -198,7 +204,7 @@ async function fetchLeaderboard(){
   } catch(e){ console.error(e); }
 }
 
-// Add Question
+// Add Question manually
 document.getElementById('question-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const question=document.getElementById('questionText').value;
@@ -214,11 +220,38 @@ document.getElementById('question-form').addEventListener('submit', async e=>{
   } catch(e){ console.error(e); alert('Error'); }
 });
 
-// Delete
-async function deleteQuestion(id){ if(confirm('Delete this question?')){ const res=await fetch(`/admin/question/${id}`,{method:'DELETE'}); const data=await res.json(); if(data.success) fetchQuestions(); else alert('Failed'); } }
-async function deleteStudent(id){ if(confirm('Delete this student?')){ const res=await fetch(`/admin/student/${id}`,{method:'DELETE'}); const data=await res.json(); if(data.success){ fetchStudents(); fetchLeaderboard(); } else alert('Failed'); } }
+// Delete Question
+async function deleteQuestion(id){ 
+  if(confirm('Delete this question?')){
+    const res=await fetch(`/admin/question/${id}`,{method:'DELETE'});
+    const data=await res.json(); 
+    if(data.success) fetchQuestions(); else alert('Failed'); 
+  } 
+}
 
-// Download Excel
+// Upload Questions File
+async function uploadQuestions(){
+  const fileInput = document.getElementById('questionFile');
+  if(!fileInput.files[0]) return alert("Select a file");
+  const formData = new FormData();
+  formData.append('questionFile', fileInput.files[0]);
+  const res = await fetch('/uploadQuestionsFile', { method:'POST', body: formData });
+  const data = await res.json();
+  if(data.success){
+    document.getElementById('previewArea').innerHTML = data.previewHTML;
+    document.getElementById('saveUploadBtn').style.display='inline-block';
+  } else alert(data.message||'Upload failed');
+}
+
+// Save uploaded questions
+async function saveUploadedQuestions(){
+  const res = await fetch('/saveUploadedQuestions',{method:'POST'});
+  const data = await res.json();
+  if(data.success){ alert('Questions saved'); document.getElementById('previewArea').innerHTML=''; document.getElementById('saveUploadBtn').style.display='none'; fetchQuestions(); }
+  else alert(data.message||'Save failed');
+}
+
+// Download Leaderboard
 function downloadLeaderboard(){
   const table=document.getElementById('leaderboardTable');
   let csv=[];
