@@ -222,15 +222,27 @@ app.delete("/admin/question/:id", (req, res) => {
 });
 
 // --- DELETE STUDENT ---
-app.delete("/admin/student/:id", (req, res) => {
-    const studentId = req.params.id;
-    db.query("DELETE FROM results WHERE student_id=?", [studentId], (err1) => {
-        if (err1) return res.json({ success: false });
-        db.query("DELETE FROM students WHERE id=?", [studentId], (err2) => {
-            if (err2) return res.json({ success: false });
-            res.json({ success: true });
+app.get("/admin/students", (req, res) => {
+
+    const sql = "SELECT id, name, email, mobile, parish, score FROM students ORDER BY id DESC";
+
+    db.query(sql, (err, results) => {
+
+        if (err) {
+            console.log("FETCH STUDENTS ERROR:", err);
+            return res.json({
+                success: false,
+                students: []
+            });
+        }
+
+        res.json({
+            success: true,
+            students: results
         });
+
     });
+
 });
 
 // --- GET ALL REGISTERED STUDENTS ---
