@@ -129,6 +129,24 @@ app.get("/admin/questions", (req, res) => {
     });
 });
 
+app.post("/admin/add-question", (req,res)=>{
+    const {question, optionA, optionB, optionC, optionD, answer} = req.body;
+
+    const sql = `
+        INSERT INTO questions
+        (question, optionA, optionB, optionC, optionD, answer)
+        VALUES (?,?,?,?,?,?)
+    `;
+
+    db.query(sql,[question,optionA,optionB,optionC,optionD,answer],(err,result)=>{
+        if(err){
+            console.log(err);
+            return res.json({success:false});
+        }
+
+        res.json({success:true});
+    });
+});
 // --- SUBMIT QUIZ ---
 app.post("/submitQuiz", (req, res) => {
     const { studentId, answers } = req.body;
