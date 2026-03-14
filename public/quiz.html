@@ -98,7 +98,7 @@ document.addEventListener("visibilitychange", ()=>{if(document.hidden){alert("Yo
 
 // =================== STUDENT NAME ===================
 const studentNameElement = document.getElementById("studentName");
-const registeredName = localStorage.getItem("studentName"); // use registered name from login
+const registeredName = localStorage.getItem("studentName"); // from database login
 if(registeredName){ studentNameElement.textContent = registeredName; }
 
 // =================== QUIZ LOGIC ===================
@@ -145,7 +145,7 @@ loadQuiz();
 
 function saveAnswer(id,value){
   answers["q"+id]=value;
-  localStorage.setItem("answers",JSON.stringify(answers));
+  localStorage.setItem("answers",JSON.stringify(answers)); // save immediately
   const btn=document.getElementById("nav"+id);
   btn.classList.add("answered");
   updateProgress();
@@ -173,7 +173,7 @@ window.onbeforeunload=function(){return "You may lose your quiz progress";}
 // =================== SUBMIT QUIZ ===================
 async function submitQuiz(){
   const studentId = localStorage.getItem("studentId");
-  const studentName = localStorage.getItem("studentName") || "Student"; // registered name
+  const studentName = localStorage.getItem("studentName") || "Student";
   const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
 
   if(!studentId || Object.keys(savedAnswers).length === 0) 
@@ -187,6 +187,7 @@ async function submitQuiz(){
     });
     const data = await res.json();
 
+    // Clear local storage after submission
     localStorage.removeItem("answers");
     localStorage.removeItem("quizOrder");
     localStorage.removeItem("quizTime");
