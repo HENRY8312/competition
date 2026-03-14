@@ -68,7 +68,7 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
 
   <!-- Sticky Top Status Bar -->
   <div class="top-bar">
-    <div>Student: <span id="studentName">John Doe</span></div>
+    <div>Student: <span id="studentName">Student</span></div>
     <div>Quiz: <span id="quizName">Mathematics Competition</span></div>
     <div>Total Questions: <span id="totalQuestions">0</span></div>
     <div id="timer">Time: 60:00</div>
@@ -96,6 +96,13 @@ document.addEventListener("copy", e=>e.preventDefault());
 document.onkeydown=function(e){if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85)) return false;}
 document.addEventListener("visibilitychange", ()=>{if(document.hidden){alert("You left the quiz page. Quiz will be submitted.");submitQuiz();}});
 
+// =================== STUDENT NAME ===================
+const studentNameElement = document.getElementById("studentName");
+const storedName = localStorage.getItem("studentName");
+if(storedName){
+  studentNameElement.textContent = storedName;
+}
+
 // =================== QUIZ LOGIC ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
 let questions = [];
@@ -121,7 +128,7 @@ async function loadQuiz() {
     const data=await res.json();
     if(!data.success||!data.questions||data.questions.length===0){document.getElementById("quiz").innerHTML="<p style='text-align:center'>No questions available.</p>"; return;}
     questions = data.questions;
-    document.getElementById("totalQuestions").innerText=questions.length;
+    document.getElementById("totalQuestions").textContent = questions.length;
     let html="", nav="";
     questions.forEach((q,i)=>{
       let opts=[{key:'A',text:q.optionA},{key:'B',text:q.optionB},{key:'C',text:q.optionC},{key:'D',text:q.optionD}];
@@ -165,16 +172,39 @@ function updateProgress(){
 function scrollToQuestion(id){document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});}
 window.onbeforeunload=function(){return "You may lose your quiz progress";}
 
+// =================== SUBMIT QUIZ ===================
 async function submitQuiz(){
-  const studentId=localStorage.getItem("studentId");
-  const savedAnswers=JSON.parse(localStorage.getItem("answers")||"{}");
-  if(!studentId||Object.keys(savedAnswers).length===0) return alert("No answers to submit or student not logged in");
-  try{
-    const res=await fetch("/submitQuiz",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studentId,answers:savedAnswers})});
-    const data=await res.json();
-    localStorage.removeItem("answers"); localStorage.removeItem("quizOrder"); localStorage.removeItem("quizTime"); localStorage.removeItem("quizActive");
-    if(data.success){ alert("Your score: "+data.score); window.location="leaderboard.html"; } else { alert("Submission failed: "+(data.message||"Unknown error")); }
-  }catch(err){console.error(err); alert("Error submitting quiz");}
+  const studentId = localStorage.getItem("studentId");
+  const studentName = localStorage.getItem("studentName") || "Student";
+  const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
+
+  if(!studentId || Object.keys(savedAnswers).length === 0) 
+    return alert("No answers to submit or student not logged in");
+
+  try {
+    const res = await fetch("/submitQuiz", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({studentId, answers: savedAnswers})
+    });
+    const data = await res.json();
+
+    localStorage.removeItem("answers");
+    localStorage.removeItem("quizOrder");
+    localStorage.removeItem("quizTime");
+    localStorage.removeItem("quizActive");
+
+    if(data.success){
+      alert(`Thank you, ${studentName}! Your score is: ${data.score}`);
+      window.location = "leaderboard.html";
+    } else {
+      alert(`Submission failed for ${studentName}: ${data.message || "Unknown error"}`);
+    }
+
+  } catch(err){
+    console.error(err);
+    alert(`Error submitting quiz for ${studentName}`);
+  }
 }
 </script>
 </body>
