@@ -69,7 +69,7 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
   <!-- Sticky Top Status Bar -->
   <div class="top-bar">
     <!-- Fixed Organizer Name -->
-    <div>Organizer: <span id="organizerName">WYEP</span></div>
+    <div>Organizer <span id="organizerName">WYEP</span></div>
     <div>Quiz: <span id="quizName">Mathematics Competition</span></div>
     <div>Total Questions: <span id="totalQuestions">0</span></div>
     <div id="timer">Time: 60:00</div>
@@ -89,13 +89,19 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
 
 <script>
 // =================== ANTI-CHEAT ===================
-if(localStorage.getItem("quizActive")){ alert("Quiz already running in another tab."); window.location="login.html"; }
-localStorage.setItem("quizActive",true);
-window.addEventListener("beforeunload",()=>localStorage.removeItem("quizActive"));
+// Removed single-tab restriction to allow multiple students simultaneously
 document.addEventListener("contextmenu", e=>e.preventDefault());
 document.addEventListener("copy", e=>e.preventDefault());
-document.onkeydown=function(e){if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85)) return false;}
-document.addEventListener("visibilitychange", ()=>{if(document.hidden){alert("You left the quiz page. Quiz will be submitted.");submitQuiz();}});
+document.onkeydown=function(e){
+  if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85))
+    return false;
+};
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){ 
+    alert("You left the quiz page. Quiz will be submitted."); 
+    submitQuiz(); 
+  }
+});
 
 // =================== QUIZ LOGIC ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
