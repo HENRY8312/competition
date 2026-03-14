@@ -166,8 +166,7 @@ async function fetchStudents(){
     const tbody=document.getElementById('studentsTableBody'); tbody.innerHTML='';
     if(data.success && data.students.length>0){
       data.students.forEach((s,i)=>tbody.innerHTML+=`<tr>
-        <td>${i+1}</td><td>${s.name}</td><td>${s.email}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score||0}</td>
-        <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
+        <td>${i+1}</td><td>${s.name}</td><td>${s.email}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>
       </tr>`);
       document.getElementById('totalStudents').innerText=data.students.length;
       const avg=Math.round(data.students.reduce((a,b)=>a+b.score,0)/data.students.length);
