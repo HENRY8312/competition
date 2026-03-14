@@ -144,8 +144,19 @@ app.post("/login", (req, res) => {
 // --- GET QUESTIONS (RANDOM ORDER) ---
 app.get("/admin/questions", (req, res) => {
     db.query("SELECT * FROM questions ORDER BY RAND()", (err, results) => {
-        if (err) return res.status(500).json([]);
-        res.json(results);
+        if (err) {
+            console.log("FETCH QUESTIONS ERROR:", err); // log actual error
+            return res.json({ success: false, questions: [], message: "Failed to fetch questions" });
+        }
+
+        if (!results || results.length === 0) {
+            return res.json({ success: true, questions: [], message: "No questions available" });
+        }
+
+        res.json({
+            success: true,
+            questions: results
+        });
     });
 });
 
