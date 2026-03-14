@@ -3,83 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mathematics Competition Dashboard</title>
+<title>Mathematics Competition</title>
 <style>
 /* --- GLOBAL STYLES --- */
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI", Arial, sans-serif;}
-body{background:#0a0f2c;color:#fff;padding:0;margin:0;}
-.container{max-width:1100px;margin:80px auto 40px auto;background:#0f1a3b;padding:30px;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.5);}
-h2{font-size:32px;text-align:center;margin-bottom:20px;color:#00fff7;text-shadow:0 0 5px #00fff7,0 0 15px #ff00ff;}
+body{background:#f5f6fa;color:#333;padding:0;margin:0;}
+.container{max-width:900px;margin:0 auto;padding:0 20px;}
 
-/* --- HEADER & TIMER --- */
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;}
-.header h2{margin:0;font-size:28px;}
-#timer{font-size:22px;font-weight:bold;color:#ff4081;text-shadow:0 0 5px #ff66aa,0 0 15px #ff0080;}
-/* --- PROGRESS BAR --- */
-.progress-container{width:100%;background:#111;border-radius:12px;margin-bottom:25px;overflow:hidden;box-shadow:0 0 8px #00fff7 inset;}
-.progress-bar{height:14px;width:0%;background:linear-gradient(90deg,#00fff7,#ff4081);transition:width 0.3s ease;box-shadow:0 0 8px #00fff7,0 0 15px #ff4081;}
-/* --- NAVIGATION BUTTONS --- */
-.nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:30px;}
-.nav button{padding:10px 14px;border:none;background:#222;color:#fff;cursor:pointer;border-radius:8px;font-weight:bold;font-size:16px;box-shadow:0 0 5px #00fff7;transition:all 0.3s;}
-.nav button:hover{background:#00fff7;color:#222;box-shadow:0 0 15px #00fff7,0 0 25px #ff4081;}
-.nav button.answered{background:#28a745;color:#fff;box-shadow:0 0 10px #28a745,0 0 20px #00ffcc;}
+/* --- STICKY TOP BAR --- */
+.top-bar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:#40739e;
+  color:white;
+  padding:15px 20px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  border-bottom-left-radius:10px;
+  border-bottom-right-radius:10px;
+}
+.top-bar div{margin:5px 0;font-size:16px;}
+.top-bar div span{font-weight:bold;}
 
-/* --- QUESTIONS --- */
-.question{background:#131a3d;padding:18px;border-radius:10px;margin-bottom:22px;box-shadow:0 0 12px #00fff7,0 0 20px #ff4081;opacity:0;transform:translateY(20px);animation:fadeIn 0.6s forwards;}
-.question h3{margin-bottom:12px;color:#00fff7;}
-label{display:block;padding:10px;cursor:pointer;border-radius:6px;background:#222;margin-bottom:8px;transition:0.3s;color:#fff;}
-label:hover{background:#333;box-shadow:0 0 8px #00fff7,0 0 15px #ff4081;}
-input[type=radio]{margin-right:10px;accent-color:#00fff7;}
+/* --- TIMER & PROGRESS --- */
+#timer{font-weight:bold;background:#f1f2f6;color:#e84118;padding:8px 12px;border-radius:8px;}
+.progress-container{flex:1;margin-left:20px;height:14px;background:#e0e0e0;border-radius:10px;overflow:hidden;margin-top:5px;}
+.progress-bar{height:14px;width:0%;background:linear-gradient(90deg,#40739e,#2f3640);transition:width 0.3s ease;border-radius:10px;}
 
-/* --- SUBMIT BUTTON --- */
-button.submit{display:block;margin:30px auto;padding:16px 36px;font-size:18px;background:linear-gradient(45deg,#00fff7,#ff4081);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:bold;box-shadow:0 0 12px #00fff7,0 0 20px #ff4081;transition:all 0.3s;}
-button.submit:hover{transform:scale(1.08);box-shadow:0 0 25px #00fff7,0 0 35px #ff4081;}
-
-/* --- MEDIA RESPONSIVE --- */
-@media(max-width:768px){
-  .container{padding:20px;margin:60px 10px 20px 10px;}
-  .header{flex-direction:column;align-items:center;gap:10px;}
-  .question h3{font-size:18px;}
-  label{font-size:16px;}
-  .nav button{padding:8px 12px;font-size:14px;}
+/* --- NAV BUTTONS --- */
+.nav{margin:15px 0;text-align:center;flex-wrap:wrap;}
+.nav button{margin:4px;padding:8px 12px;border:none;background:#f1f2f6;color:#2f3640;cursor:pointer;border-radius:6px;font-weight:bold;transition:background 0.3s, transform 0.2s;}
+.nav button:hover{background:#dcdde1;}
+.nav button.answered{background:#27ae60;color:white;animation:flashGreen 0.5s ease;}
+@keyframes flashGreen{
+  0%{background:#2ecc71;}
+  50%{background:#27ae60;}
+  100%{background:#27ae60;}
 }
 
-/* --- ANIMATIONS --- */
-@keyframes fadeIn{to{opacity:1;transform:translateY(0);}}
+/* --- QUESTIONS --- */
+.question{background:#f9f9f9;padding:18px;border-radius:10px;margin-bottom:20px;box-shadow:0 3px 8px rgba(0,0,0,0.05);}
+.question h3{margin-bottom:12px;color:#2f3640;}
+label{display:block;padding:10px;cursor:pointer;border-radius:6px;background:#f1f2f6;margin-bottom:10px;transition:background 0.2s;}
+label:hover{background:#dcdde1;}
+input[type=radio]{margin-right:10px;}
+
+/* --- SUBMIT BUTTON --- */
+button.submit{display:block;margin:25px auto 50px auto;padding:14px 32px;font-size:18px;background:#40739e;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;transition:background 0.3s, transform 0.2s;}
+button.submit:hover{background:#2f3640;transform:scale(1.03);}
+
+/* --- RESPONSIVE --- */
+@media(max-width:768px){
+  .top-bar{flex-direction:column;align-items:flex-start;}
+  .progress-container{margin-left:0;margin-top:10px;width:100%;}
+}
 </style>
 </head>
 <body>
-
 <div class="container">
-  <div class="header">
-    <h2>Mathematics Competition</h2>
+
+  <!-- Sticky Top Status Bar -->
+  <div class="top-bar">
+    <div>Student: <span id="studentName">John Doe</span></div>
+    <div>Quiz: <span id="quizName">Mathematics Competition</span></div>
+    <div>Total Questions: <span id="totalQuestions">0</span></div>
     <div id="timer">Time: 60:00</div>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
   </div>
 
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
-  </div>
-
+  <!-- Navigation Buttons -->
   <div class="nav" id="navButtons"></div>
 
+  <!-- Questions -->
   <div id="quiz"></div>
 
+  <!-- Submit Button -->
   <button class="submit" onclick="submitQuiz()">Submit Answers</button>
+
 </div>
 
 <script>
 // =================== ANTI-CHEAT ===================
-if(localStorage.getItem("quizActive")) { alert("Quiz already running in another tab."); window.location="login.html"; }
+if(localStorage.getItem("quizActive")){ alert("Quiz already running in another tab."); window.location="login.html"; }
 localStorage.setItem("quizActive",true);
 window.addEventListener("beforeunload",()=>localStorage.removeItem("quizActive"));
 document.addEventListener("contextmenu", e=>e.preventDefault());
 document.addEventListener("copy", e=>e.preventDefault());
-document.onkeydown=function(e){
-  if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85)) return false;
-};
-document.addEventListener("visibilitychange", ()=>{
-  if(document.hidden){ alert("You left the quiz page. Quiz will be submitted."); submitQuiz(); }
-});
+document.onkeydown=function(e){if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85)) return false;}
+document.addEventListener("visibilitychange", ()=>{if(document.hidden){alert("You left the quiz page. Quiz will be submitted.");submitQuiz();}});
 
 // =================== QUIZ LOGIC ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
@@ -98,63 +113,36 @@ function startTimer(){
 }
 startTimer();
 
-function shuffleArray(array){
-  for(let i=array.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [array[i],array[j]]=[array[j],array[i]];
-  }
-  return array;
-}
+function shuffleArray(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];} return array;}
 
 async function loadQuiz() {
-    try {
-        const res = await fetch("/questions");
-        const data = await res.json();
-        if(!data.success || !data.questions || data.questions.length === 0){
-            document.getElementById("quiz").innerHTML = "<p style='text-align:center'>No questions available.</p>";
-            return;
-        }
-
-        questions = data.questions;
-        let html = "";
-        let nav = "";
-
-        questions.forEach((q,i)=>{
-            let opts=[
-                {key:'A',text:q.optionA},
-                {key:'B',text:q.optionB},
-                {key:'C',text:q.optionC},
-                {key:'D',text:q.optionD}
-            ];
-            opts = shuffleArray(opts);
-
-            html += `<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
-            opts.forEach(opt=>{
-                html += `<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`;
-            });
-            html += "</div>";
-
-            nav += `<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
-        });
-
-        document.getElementById("quiz").innerHTML = html;
-        document.getElementById("navButtons").innerHTML = nav;
-
-        restoreAnswers();
-        updateProgress();
-
-    } catch(err){
-        console.error(err);
-        document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>";
-    }
+  try{
+    const res=await fetch("/questions");
+    const data=await res.json();
+    if(!data.success||!data.questions||data.questions.length===0){document.getElementById("quiz").innerHTML="<p style='text-align:center'>No questions available.</p>"; return;}
+    questions = data.questions;
+    document.getElementById("totalQuestions").innerText=questions.length;
+    let html="", nav="";
+    questions.forEach((q,i)=>{
+      let opts=[{key:'A',text:q.optionA},{key:'B',text:q.optionB},{key:'C',text:q.optionC},{key:'D',text:q.optionD}];
+      opts=shuffleArray(opts);
+      html+=`<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
+      opts.forEach(opt=>{html+=`<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`;});
+      html+="</div>";
+      nav+=`<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
+    });
+    document.getElementById("quiz").innerHTML=html;
+    document.getElementById("navButtons").innerHTML=nav;
+    restoreAnswers(); updateProgress();
+  }catch(err){console.error(err); document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>";}
 }
-
 loadQuiz();
 
 function saveAnswer(id,value){
   answers["q"+id]=value;
   localStorage.setItem("answers",JSON.stringify(answers));
-  document.getElementById("nav"+id).classList.add("answered");
+  const btn=document.getElementById("nav"+id);
+  btn.classList.add("answered");
   updateProgress();
 }
 
@@ -171,41 +159,22 @@ function restoreAnswers(){
 function updateProgress(){
   let total=questions.length;
   let answered=Object.keys(answers).length;
-  let percent=(answered/total)*100;
-  document.getElementById("progressBar").style.width=percent+"%";
+  document.querySelector(".progress-bar").style.width=(answered/total*100)+"%";
 }
 
-function scrollToQuestion(id){
-  document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});
-}
-
-window.onbeforeunload=function(){ return "You may lose your quiz progress"; }
+function scrollToQuestion(id){document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});}
+window.onbeforeunload=function(){return "You may lose your quiz progress";}
 
 async function submitQuiz(){
   const studentId=localStorage.getItem("studentId");
   const savedAnswers=JSON.parse(localStorage.getItem("answers")||"{}");
   if(!studentId||Object.keys(savedAnswers).length===0) return alert("No answers to submit or student not logged in");
-
   try{
-    const res=await fetch("/submitQuiz",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({studentId,answers:savedAnswers})
-    });
+    const res=await fetch("/submitQuiz",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studentId,answers:savedAnswers})});
     const data=await res.json();
-
-    localStorage.removeItem("answers");
-    localStorage.removeItem("quizOrder");
-    localStorage.removeItem("quizTime");
-    localStorage.removeItem("quizActive");
-
-    if(data.success){
-      alert("Your score: "+data.score);
-      window.location="leaderboard.html";
-    } else {
-      alert("Submission failed: "+(data.message||"Unknown error"));
-    }
-  }catch(err){ console.error(err); alert("Error submitting quiz"); }
+    localStorage.removeItem("answers"); localStorage.removeItem("quizOrder"); localStorage.removeItem("quizTime"); localStorage.removeItem("quizActive");
+    if(data.success){ alert("Your score: "+data.score); window.location="leaderboard.html"; } else { alert("Submission failed: "+(data.message||"Unknown error")); }
+  }catch(err){console.error(err); alert("Error submitting quiz");}
 }
 </script>
 </body>
