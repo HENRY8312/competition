@@ -182,20 +182,29 @@ app.get("/admin/questions", (req, res) => {
 // --- SUBMIT QUIZ ---
 app.post("/submitQuiz", (req, res) => {
     const { studentId, answers } = req.body;
-    if (!studentId || !answers) return res.json({ success: false, message: "Invalid data" });
+    if (!studentId || !answers) 
+        return res.json({ success: false, message: "Invalid data" });
 
-    db.query("SELECT id, answer FROM questions", (err, questions) => {
-        if (err) return res.json({ success: false, message: "Error fetching questions" });
+    // Check if the student already submitted
+    db.query("SELECT * FROM results WHERE student_id=?", [studentId], (err1, existing) => {
+        if (err1) return res.json({ success: false, message: "Database error" });
+        if (existing.length > 0) return res.json({ success: false, message: "You have already submitted" });
 
-        let score = 0;
-        questions.forEach(q => {
-            const key = "q" + q.id;
-            if (answers[key] && answers[key] === q.answer) score++;
-        });
+        // Fetch correct answers
+        db.query("SELECT id, answer FROM questions", (err2, questions) => {
+            if (err2) return res.json({ success: false, message: "Error fetching questions" });
 
-        db.query("INSERT INTO results (student_id, score) VALUES (?,?)", [studentId, score], (err2) => {
-            if (err2) return res.json({ success: false, message: "Error saving score" });
-            res.json({ success: true, score });
+            let score = 0;
+            questions.forEach(q => {
+                const key = "q" + q.id;
+                if (answers[key] && answers[key] === q.answer) score++;
+            });
+
+            // Save score
+            db.query("INSERT INTO results (student_id, score) VALUES (?,?)", [studentId, score], (err3) => {
+                if (err3) return res.json({ success: false, message: "Error saving score" });
+                res.json({ success: true, score });
+            });
         });
     });
 });
