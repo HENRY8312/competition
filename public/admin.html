@@ -242,7 +242,7 @@ async function fetchStudents(){
       data.students.forEach((s,i)=>{
         tbody.innerHTML += `<tr>
           <td>${i+1}</td><td>${s.name}</td><td>${s.email||'-'}</td>
-          <td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score||0}</td>
+          <td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>
         </tr>`;
       });
     } else tbody.innerHTML="<tr><td colspan='6'>No students yet</td></tr>";
