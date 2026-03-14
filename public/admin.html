@@ -85,6 +85,11 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; 
   </div>
 
   <!-- Questions -->
+  <h3>Upload Questions (Word/PDF)</h3>
+<input type="file" id="questionFile" accept=".docx,.pdf">
+<button onclick="uploadQuestions()">Upload & Preview</button>
+<div id="previewArea"></div>
+<button id="saveUploadBtn" style="display:none" onclick="saveUploadedQuestions()">Save Questions</button>
   <div id="questions-section" style="display:none;">
     <h3>Add Question</h3>
     <form id="question-form">
