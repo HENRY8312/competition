@@ -98,10 +98,8 @@ document.addEventListener("visibilitychange", ()=>{if(document.hidden){alert("Yo
 
 // =================== STUDENT NAME ===================
 const studentNameElement = document.getElementById("studentName");
-const storedName = localStorage.getItem("studentName");
-if(storedName){
-  studentNameElement.textContent = storedName;
-}
+const registeredName = localStorage.getItem("studentName"); // use registered name from login
+if(registeredName){ studentNameElement.textContent = registeredName; }
 
 // =================== QUIZ LOGIC ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
@@ -175,7 +173,7 @@ window.onbeforeunload=function(){return "You may lose your quiz progress";}
 // =================== SUBMIT QUIZ ===================
 async function submitQuiz(){
   const studentId = localStorage.getItem("studentId");
-  const studentName = localStorage.getItem("studentName") || "Student";
+  const studentName = localStorage.getItem("studentName") || "Student"; // registered name
   const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
 
   if(!studentId || Object.keys(savedAnswers).length === 0) 
@@ -185,7 +183,7 @@ async function submitQuiz(){
     const res = await fetch("/submitQuiz", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({studentId, answers: savedAnswers})
+      body:JSON.stringify({studentId, answers: savedAnswers})
     });
     const data = await res.json();
 
