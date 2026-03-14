@@ -56,6 +56,40 @@ input[type=radio]{margin-right:10px;}
 button.submit{display:block;margin:25px auto 50px auto;padding:14px 32px;font-size:18px;background:#40739e;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;transition:background 0.3s, transform 0.2s;}
 button.submit:hover{background:#2f3640;transform:scale(1.03);}
 
+/* --- REVIEW MODAL --- */
+#reviewModal{
+  display:none;
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.7);
+  z-index:999;
+  justify-content:center;
+  align-items:center;
+}
+#reviewContent{
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  max-width:700px;
+  max-height:80vh;
+  overflow-y:auto;
+}
+#reviewContent h3{text-align:center;margin-bottom:20px;}
+#reviewContent ul{list-style:none;margin:0;padding:0;}
+#reviewContent li{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  display:flex;
+  justify-content:space-between;
+}
+#reviewContent li.answered{background:#dff9e0; color:#27ae60;}
+#reviewContent li.unanswered{background:#ffe0e0; color:#e84118;}
+#reviewContent li span{font-weight:bold;}
+#reviewButtons{margin-top:20px;text-align:center;}
+#reviewButtons button{padding:10px 20px;margin:0 10px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}
+#confirmBtn{background:#27ae60;color:white;}
+#editBtn{background:#e84118;color:white;}
+
 /* --- RESPONSIVE --- */
 @media(max-width:768px){
   .top-bar{flex-direction:column;align-items:flex-start;}
@@ -82,25 +116,23 @@ button.submit:hover{background:#2f3640;transform:scale(1.03);}
   <div id="quiz"></div>
 
   <!-- Submit Button -->
-  <button class="submit" onclick="submitQuiz()">Submit Answers</button>
+  <button class="submit" onclick="openReview()">Submit Answers</button>
 
 </div>
 
-<script>
-// =================== ANTI-CHEAT ===================
-document.addEventListener("contextmenu", e=>e.preventDefault());
-document.addEventListener("copy", e=>e.preventDefault());
-document.onkeydown=function(e){
-  if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&['I','J'].includes(String.fromCharCode(e.keyCode)))||(e.ctrlKey&&e.keyCode==85))
-    return false;
-};
-document.addEventListener("visibilitychange", ()=>{
-  if(document.hidden){ 
-    alert("You left the quiz page. Quiz will be submitted."); 
-    submitQuiz(); 
-  }
-});
+<!-- Review Modal -->
+<div id="reviewModal">
+  <div id="reviewContent">
+    <h3>Review Your Answers</h3>
+    <ul id="reviewList"></ul>
+    <div id="reviewButtons">
+      <button id="editBtn" onclick="closeReview()">Edit Answers</button>
+      <button id="confirmBtn" onclick="finalSubmit()">Confirm & Submit</button>
+    </div>
+  </div>
+</div>
 
+<script>
 // =================== GLOBAL TIMER ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
 function startTimer(){
@@ -110,7 +142,7 @@ function startTimer(){
     timerElement.innerText=`Time: ${minutes}:${seconds<10?'0'+seconds:seconds}`;
     time--;
     localStorage.setItem("quizTime",time);
-    if(time<0){ clearInterval(interval); alert("Time is up! Submitting automatically"); submitQuiz(); }
+    if(time<0){ clearInterval(interval); alert("Time is up! Submitting automatically"); finalSubmit(); }
   },1000);
 }
 startTimer();
@@ -171,39 +203,41 @@ function updateProgress(){
 function scrollToQuestion(id){document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});}
 window.onbeforeunload=function(){return "You may lose your quiz progress";}
 
-// =================== SUBMIT QUIZ ===================
-async function submitQuiz(){
+// =================== REVIEW & SUBMIT ===================
+function openReview(){
+  const reviewList = document.getElementById("reviewList");
+  reviewList.innerHTML = "";
+  questions.forEach((q,i)=>{
+    const answer = answers["q"+q.id];
+    const statusClass = answer ? "answered" : "unanswered";
+    const displayAnswer = answer || "Unanswered";
+    reviewList.innerHTML += `<li class="${statusClass}">Q${i+1}: ${q.question} <span>Answer: ${displayAnswer}</span></li>`;
+  });
+  document.getElementById("reviewModal").style.display = "flex";
+}
+
+function closeReview(){ document.getElementById("reviewModal").style.display = "none"; }
+
+async function finalSubmit(){
   const studentId = localStorage.getItem("studentId");
   const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
-
-  // Student without answers
-  if(Object.keys(savedAnswers).length === 0){
-    alert("No answers to submit");
-    return;
-  }
+  if(!studentId){ alert("Error: Student not logged in"); return; }
 
   try {
     const res = await fetch("/submitQuiz", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
       body:JSON.stringify({studentId, answers: savedAnswers})
     });
     const data = await res.json();
-
-    // Clear local storage after submission
     localStorage.removeItem("answers");
-
     if(data.success){
       alert(`✅ Your score is: ${data.score}`);
       window.location = "leaderboard.html";
     } else {
       alert(`Submission failed: ${data.message || "Unknown error"}`);
     }
-
-  } catch(err){
-    console.error(err);
-    alert("Error submitting quiz");
-  }
+  } catch(err){console.error(err); alert("Error submitting quiz"); }
 }
 </script>
 </body>
