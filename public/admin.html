@@ -281,235 +281,184 @@ font-size:12px;
 const loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", function(e){
+  e.preventDefault();
 
-e.preventDefault();
+  const username = document.getElementById("adminUsername").value;
+  const password = document.getElementById("adminPassword").value;
 
-const username = document.getElementById("adminUsername").value;
-const password = document.getElementById("adminPassword").value;
+  if(username === "admin" && password === "adminwccrm8312"){
+    localStorage.setItem("adminLoggedIn","true");
 
-if(username === "admin" && password === "adminwccrm8312"){
+    document.getElementById("admin-login").style.display="none";
+    document.getElementById("admin-panel").style.display="block";
 
-localStorage.setItem("adminLoggedIn","true");
+    loadQuestions();
+    loadStudents();
 
-document.getElementById("admin-login").style.display="none";
-document.getElementById("admin-panel").style.display="block";
-
-loadQuestions();
-loadStudents();
-
-alert("Admin logged in successfully!");
-
-}else{
-
-alert("Invalid admin credentials!");
-
-}
-
+    alert("Admin logged in successfully!");
+  }else{
+    alert("Invalid admin credentials!");
+  }
 });
 
-// LOGOUT
+// ------------------- LOGOUT -------------------
 function logoutAdmin(){
-
-localStorage.removeItem("adminLoggedIn");
-location.reload();
-
+  localStorage.removeItem("adminLoggedIn");
+  location.reload();
 }
 
-// ADD QUESTION
-const questionForm=document.getElementById("question-form");
+// ------------------- ADD QUESTION -------------------
+const questionForm = document.getElementById("question-form");
 
-questionForm.addEventListener("submit",async function(e){
+questionForm.addEventListener("submit", async function(e){
+  e.preventDefault();
 
-e.preventDefault();
+  const question = document.getElementById("questionText").value;
+  const optionA = document.getElementById("optionA").value;
+  const optionB = document.getElementById("optionB").value;
+  const optionC = document.getElementById("optionC").value;
+  const optionD = document.getElementById("optionD").value;
+  const answer = document.getElementById("correctAnswer").value;
 
-const question=document.getElementById("questionText").value;
-const optionA=document.getElementById("optionA").value;
-const optionB=document.getElementById("optionB").value;
-const optionC=document.getElementById("optionC").value;
-const optionD=document.getElementById("optionD").value;
-const answer=document.getElementById("correctAnswer").value;
+  try {
+    const res = await fetch("/addQuestion", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({question, optionA, optionB, optionC, optionD, answer})
+    });
 
-try{
+    const data = await res.json();
 
-const res=await fetch("/addQuestion",{
-
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({question,optionA,optionB,optionC,optionD,answer})
-
+    if(data.success){
+      alert("Question added successfully!");
+      questionForm.reset();
+      loadQuestions();
+    }else{
+      alert(data.message || "Failed to add question");
+    }
+  }catch(err){
+    console.error("Error adding question:", err);
+    alert("Error adding question");
+  }
 });
 
-const data=await res.json();
-
-if(data.success){
-
-alert("Question added successfully!");
-questionForm.reset();
-loadQuestions();
-
-}else{
-
-alert("Failed to add question");
-
-}
-
-}catch(err){
-
-alert("Error adding question");
-
-}
-
-});
-
-// LOAD QUESTIONS
+// ------------------- LOAD QUESTIONS -------------------
 async function loadQuestions(){
+  const tbody = document.getElementById("questionsTableBody");
 
-const tbody=document.getElementById("questionsTableBody");
+  try{
+    const res = await fetch("/admin/questions");
+    const data = await res.json();
 
-try{
+    tbody.innerHTML = "";
 
-const res=await fetch("/admin/questions");
-const data=await res.json();
-
-tbody.innerHTML="";
-
-if(data.length>0){
-
-data.forEach((q,index)=>{
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
-<td>${index+1}</td>
-<td>${q.question}</td>
-<td>${q.optionA}</td>
-<td>${q.optionB}</td>
-<td>${q.optionC}</td>
-<td>${q.optionD}</td>
-<td>${q.answer}</td>
-<td><button onclick="deleteQuestion(${q.id})">Delete</button></td>
-`;
-
-tbody.appendChild(row);
-
-});
-
-}else{
-
-tbody.innerHTML="<tr><td colspan='8'>No questions yet</td></tr>";
-
+    if(data.success && data.questions && data.questions.length > 0){
+      data.questions.forEach((q, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index+1}</td>
+          <td>${q.question}</td>
+          <td>${q.optionA}</td>
+          <td>${q.optionB}</td>
+          <td>${q.optionC}</td>
+          <td>${q.optionD}</td>
+          <td>${q.answer}</td>
+          <td><button onclick="deleteQuestion(${q.id})">Delete</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }else{
+      tbody.innerHTML = "<tr><td colspan='8'>No questions yet</td></tr>";
+    }
+  }catch(err){
+    console.error("Error loading questions:", err);
+    tbody.innerHTML = "<tr><td colspan='8'>Failed to load questions</td></tr>";
+  }
 }
 
-}catch{
-
-tbody.innerHTML="<tr><td colspan='8'>Failed to load questions</td></tr>";
-
-}
-
-}
-
-// LOAD STUDENTS
+// ------------------- LOAD STUDENTS -------------------
 async function loadStudents(){
+  const tbody = document.getElementById("studentsTableBody");
 
-const tbody=document.getElementById("studentsTableBody");
+  try{
+    const res = await fetch("/admin/students");
+    const data = await res.json();
 
-try{
+    tbody.innerHTML = "";
 
-const res=await fetch("/admin/students");
-const data=await res.json();
-
-tbody.innerHTML="";
-
-if(data.success && data.students.length>0){
-
-data.students.forEach((s,index)=>{
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
-<td>${index+1}</td>
-<td>${s.name}</td>
-<td>${s.email}</td>
-<td>${s.mobile}</td>
-<td>${s.parish}</td>
-<td>${s.score || 0}</td>
-<td><button onclick="deleteStudent(${s.id})">Delete</button></td>
-`;
-
-tbody.appendChild(row);
-
-});
-
-}else{
-
-tbody.innerHTML="<tr><td colspan='7'>No registered students yet</td></tr>";
-
+    if(data.success && data.students && data.students.length > 0){
+      data.students.forEach((s, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index+1}</td>
+          <td>${s.name}</td>
+          <td>${s.email}</td>
+          <td>${s.mobile || "-"}</td>
+          <td>${s.parish || "-"}</td>
+          <td>${s.score || 0}</td>
+          <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }else{
+      tbody.innerHTML = "<tr><td colspan='7'>No registered students yet</td></tr>";
+    }
+  }catch(err){
+    console.error("Error loading students:", err);
+    tbody.innerHTML = "<tr><td colspan='7'>Failed to load students</td></tr>";
+  }
 }
 
-}catch{
-
-tbody.innerHTML="<tr><td colspan='7'>Failed to load students</td></tr>";
-
-}
-
-}
-
-// DELETE QUESTION
+// ------------------- DELETE QUESTION -------------------
 async function deleteQuestion(id){
+  if(!confirm("Delete this question?")) return;
 
-if(!confirm("Delete this question?")) return;
+  try{
+    const res = await fetch(`/admin/question/${id}`, {method:"DELETE"});
+    const data = await res.json();
 
-const res=await fetch(`/admin/question/${id}`,{method:"DELETE"});
-const data=await res.json();
-
-if(data.success){
-
-loadQuestions();
-
-}else{
-
-alert("Failed to delete");
-
+    if(data.success){
+      loadQuestions();
+    }else{
+      alert(data.message || "Failed to delete question");
+    }
+  }catch(err){
+    console.error("Error deleting question:", err);
+    alert("Error deleting question");
+  }
 }
 
-}
-
-// DELETE STUDENT
+// ------------------- DELETE STUDENT -------------------
 async function deleteStudent(id){
+  if(!confirm("Delete this student?")) return;
 
-if(!confirm("Delete this student?")) return;
+  try{
+    const res = await fetch(`/admin/student/${id}`, {method:"DELETE"});
+    const data = await res.json();
 
-const res=await fetch(`/admin/student/${id}`,{method:"DELETE"});
-const data=await res.json();
-
-if(data.success){
-
-loadStudents();
-
-}else{
-
-alert("Failed to delete student");
-
+    if(data.success){
+      loadStudents();
+    }else{
+      alert(data.message || "Failed to delete student");
+    }
+  }catch(err){
+    console.error("Error deleting student:", err);
+    alert("Error deleting student");
+  }
 }
 
-}
+// ------------------- CHECK ADMIN LOGIN -------------------
+window.onload = function(){
+  const adminLoggedIn = localStorage.getItem("adminLoggedIn");
 
-// CHECK LOGIN
-window.onload=function(){
+  if(adminLoggedIn === "true"){
+    document.getElementById("admin-login").style.display="none";
+    document.getElementById("admin-panel").style.display="block";
 
-const adminLoggedIn=localStorage.getItem("adminLoggedIn");
-
-if(adminLoggedIn==="true"){
-
-document.getElementById("admin-login").style.display="none";
-document.getElementById("admin-panel").style.display="block";
-
-loadQuestions();
-loadStudents();
-
-}
-
-}
+    loadQuestions();
+    loadStudents();
+  }
+};
 
 </script>
 
