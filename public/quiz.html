@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Mathematics Competition</title>
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:"Segoe UI", Arial, sans-serif;background:linear-gradient(135deg,#007bff,#00c6ff);padding:20px;}
@@ -33,63 +29,38 @@ button.submit:hover{background:linear-gradient(45deg,#0056b3,#0088cc);transform:
   .nav button{padding:6px 10px;font-size:14px;}
 }
 </style>
-
 </head>
-
 <body>
-
 <div class="container">
-
 <h2>Mathematics Competition</h2>
-
 <div id="timer">Time: 60:00</div>
-
-<div class="progress-container">
-<div class="progress-bar" id="progressBar"></div>
-</div>
-
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
 <div class="nav" id="navButtons"></div>
-
 <div id="quiz"></div>
-
 <button class="submit" onclick="submitQuiz()">Submit Answers</button>
-
 </div>
 
 <script>
 // =================== ANTI-CHEAT ===================
-// Single tab enforcement
 if(localStorage.getItem("quizActive")){
   alert("Quiz already running in another tab.");
   window.location="login.html";
 }
 localStorage.setItem("quizActive",true);
 window.addEventListener("beforeunload",function(){ localStorage.removeItem("quizActive"); });
-
-// Disable right-click & copy
 document.addEventListener("contextmenu", e=> e.preventDefault());
 document.addEventListener("copy", e=> e.preventDefault());
-
-// Disable dev tools
 document.onkeydown = function(e){
-  if(e.keyCode==123 || 
-     (e.ctrlKey && e.shiftKey && ['I','J'].includes(String.fromCharCode(e.keyCode))) || 
-     (e.ctrlKey && e.keyCode==85)) return false;
+  if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && ['I','J'].includes(String.fromCharCode(e.keyCode))) || (e.ctrlKey && e.keyCode==85)) return false;
 };
-
-// Auto-submit if tab hidden
 document.addEventListener("visibilitychange", ()=>{
-  if(document.hidden){
-    alert("You left the quiz page. Quiz will be submitted.");
-    submitQuiz();
-  }
+  if(document.hidden){ alert("You left the quiz page. Quiz will be submitted."); submitQuiz(); }
 });
 
 // =================== QUIZ LOGIC ===================
 let time = localStorage.getItem("quizTime") ? parseInt(localStorage.getItem("quizTime")) : 3600;
 let questions = [];
-let answers = JSON.parse(localStorage.getItem("answers")) || {};
-let questionOrder = JSON.parse(localStorage.getItem("quizOrder")) || [];
+let answers = JSON.parse(localStorage.getItem("answers") || "{}");
 
 function startTimer(){
   const timerElement=document.getElementById("timer");
@@ -103,7 +74,6 @@ function startTimer(){
 }
 startTimer();
 
-// Shuffle utility
 function shuffleArray(array){
   for(let i=array.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
@@ -112,32 +82,20 @@ function shuffleArray(array){
   return array;
 }
 
-// Load questions
-  let html = "";
-let nav = "";  // initialize before using +=
 async function loadQuiz() {
     try {
         const res = await fetch("/questions");
         const data = await res.json();
-
-        if (!data.success) {
-            document.getElementById("quiz").innerHTML = "<p style='text-align:center'>Failed to load questions.</p>";
+        if(!data.success || !data.questions || data.questions.length === 0){
+            document.getElementById("quiz").innerHTML = "<p style='text-align:center'>No questions available.</p>";
             return;
         }
 
-        questions = data.questions; // assign global questions array
+        questions = data.questions;
         let html = "";
         let nav = "";
 
         questions.forEach((q, i) => {
-    // build question HTML
-    html += `<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
-    // options shuffled and added here...
-    html += "</div>";
-
-    // navigation button
-    nav += `<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
-});
             let opts = [
                 {key:'A',text:q.optionA},
                 {key:'B',text:q.optionB},
@@ -167,37 +125,8 @@ async function loadQuiz() {
     }
 }
 
-      // Randomize options
-      let opts = [
-        {key:'A',text:q.optionA},
-        {key:'B',text:q.optionB},
-        {key:'C',text:q.optionC},
-        {key:'D',text:q.optionD}
-      ];
-      opts = shuffleArray(opts);
+loadQuiz();
 
-      html+=`<div class="question" id="q${q.id}"><h3>${i+1}. ${q.question}</h3>`;
-      opts.forEach(opt=>{
-        html+=`<label><input type="radio" name="q${q.id}" value="${opt.key}" onchange="saveAnswer(${q.id},'${opt.key}')">${opt.text}</label>`;
-      });
-      html+="</div>";
-
-      nav+=`<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${i+1}</button>`;
-    });
-
-    document.getElementById("quiz").innerHTML=html;
-    document.getElementById("navButtons").innerHTML=nav;
-
-    restoreAnswers();
-    updateProgress();
-
-  }catch(err){
-    document.getElementById("quiz").innerHTML="<p style='text-align:center'>Failed to load questions.</p>";
-  }
-}
-loadQuestions();
-
-// Save answer
 function saveAnswer(id,value){
   answers["q"+id]=value;
   localStorage.setItem("answers",JSON.stringify(answers));
@@ -205,7 +134,6 @@ function saveAnswer(id,value){
   updateProgress();
 }
 
-// Restore answers
 function restoreAnswers(){
   Object.keys(answers).forEach(key=>{
     const input = document.querySelector(`input[name="${key}"][value="${answers[key]}"]`);
@@ -216,7 +144,6 @@ function restoreAnswers(){
   });
 }
 
-// Progress bar
 function updateProgress(){
   let total=questions.length;
   let answered=Object.keys(answers).length;
@@ -224,35 +151,38 @@ function updateProgress(){
   document.getElementById("progressBar").style.width=percent+"%";
 }
 
-// Scroll to question
 function scrollToQuestion(id){
   document.getElementById("q"+id).scrollIntoView({behavior:"smooth"});
 }
 
-// Prevent refresh
 window.onbeforeunload=function(){ return "You may lose your quiz progress"; }
 
-// Submit quiz
 async function submitQuiz(){
-  const studentId=localStorage.getItem("studentId");
+  const studentId = localStorage.getItem("studentId");
+  const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
+  if(!studentId || Object.keys(savedAnswers).length === 0) return alert("No answers to submit or student not logged in");
+
   try{
-    const res=await fetch("/submitQuiz",{
+    const res = await fetch("/submitQuiz",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({studentId,answers})
+      body:JSON.stringify({studentId,answers:savedAnswers})
     });
-    const data=await res.json();
+    const data = await res.json();
+
     localStorage.removeItem("answers");
     localStorage.removeItem("quizOrder");
     localStorage.removeItem("quizTime");
     localStorage.removeItem("quizActive");
+
     if(data.success){
       alert("Your score: "+data.score);
       window.location="leaderboard.html";
-    } else alert("Submission failed");
-  }catch(err){ alert("Error submitting quiz"); }
+    } else {
+      alert("Submission failed: "+(data.message || "Unknown error"));
+    }
+  }catch(err){ console.error(err); alert("Error submitting quiz"); }
 }
 </script>
-
 </body>
 </html>
