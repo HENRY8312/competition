@@ -1,247 +1,193 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Math Competition Dashboard</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI','Roboto',Arial,sans-serif; }
-body { display:flex; min-height:100vh; background:#f5f6fa; color:#333; }
+<!-- Questions -->
+<div id="questions-section" style="display:none;">
+  <h3>Manage Questions</h3>
 
-/* Sidebar */
-.sidebar {
-  width:220px; background:#192a56; color:#fff; display:flex; flex-direction:column; padding:20px;
-}
-.sidebar h2 { text-align:center; margin-bottom:30px; font-size:22px; }
-.sidebar a { color:#fff; text-decoration:none; padding:12px 15px; border-radius:6px; margin-bottom:10px; display:block; transition:.2s; }
-.sidebar a:hover, .sidebar a.active { background:#40739e; }
-
-/* Main */
-.main { flex:1; padding:30px; overflow-x:auto; }
-
-/* Dashboard Cards */
-.dashboard-cards { display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px; }
-.card { background:#fff; flex:1 1 200px; padding:20px; border-radius:12px; box-shadow:0 8px 25px rgba(0,0,0,0.08); transition:transform .2s ease, box-shadow .2s ease; }
-.card:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(0,0,0,0.12); }
-.card h3 { margin-bottom:15px; font-weight:600; color:#192a56; }
-.card p { font-size:28px; font-weight:bold; color:#40739e; }
-
-/* Tables */
-.table-wrapper { overflow-x:auto; margin-bottom:30px; }
-table { width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; background:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
-th, td { padding:14px; text-align:center; font-size:14px; }
-th { background:#40739e; color:#fff; text-transform:uppercase; }
-tr:nth-child(even){ background:#f1f2f6; } tr:hover{ background:#dcdde1; }
-tr.top10 { background:#f39c12; color:white; font-weight:bold; }
-
-/* Buttons */
-button { background-color:#273c75; color:#fff; border:none; cursor:pointer; font-weight:600; border-radius:6px; padding:10px 18px; transition:.2s; }
-button:hover { background-color:#192a56; transform:scale(1.02); }
-
-/* Forms */
-input, select, textarea { width:100%; padding:12px; margin:10px 0; border-radius:6px; border:1px solid #dcdde1; font-size:14px; }
-input:focus, select:focus, textarea:focus { outline:none; border-color:#40739e; box-shadow:0 0 6px rgba(64,115,158,0.2); }
-
-/* Responsive */
-@media(max-width:900px){
-  body { flex-direction:column; }
-  .sidebar { width:100%; flex-direction:row; justify-content:space-around; padding:10px; }
-  .sidebar h2 { display:none; }
-  .main { padding:15px; }
-  .dashboard-cards { flex-direction:column; }
-}
-.search-box { margin-bottom:15px; }
-.search-box input { width:300px; max-width:100%; }
-</style>
-</head>
-<body>
-
-<!-- Sidebar -->
-<div class="sidebar">
-  <h2>Dashboard</h2>
-  <a href="#" class="active" onclick="showSection('dashboard', this)">Home</a>
-  <a href="#" onclick="showSection('questions', this)">Questions</a>
-  <a href="#" onclick="showSection('students', this)">Students</a>
-  <a href="#" onclick="showSection('leaderboard', this)">Leaderboard</a>
-  <a href="#" onclick="logoutAdmin()">Logout</a>
-</div>
-
-<!-- Main -->
-<div class="main">
-
-  <!-- Dashboard -->
-  <div id="dashboard-section">
-    <div class="dashboard-cards">
-      <div class="card"><h3>Total Students</h3><p id="totalStudents">0</p></div>
-      <div class="card"><h3>Total Questions</h3><p id="totalQuestions">0</p></div>
-    </div>
-
-    <h3>Students by Parish</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead><tr><th>Parish</th><th>Number of Students</th></tr></thead>
-        <tbody id="studentsByParish"></tbody>
-      </table>
-    </div>
+  <!-- Search -->
+  <div class="search-box">
+    <input type="text" id="questionSearch" placeholder="Search by question text or options" onkeyup="filterQuestions()">
   </div>
 
-  <!-- Questions -->
-  <div id="questions-section" style="display:none;">
-    <h3>All Questions</h3>
-    <div class="table-wrapper">
-      <table>
-        <thead><tr><th>#</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>Correct</th><th>Action</th></tr></thead>
-        <tbody id="questionsTableBody"></tbody>
-      </table>
-    </div>
+  <!-- Upload Questions -->
+  <h4>Upload Questions (Word/PDF)</h4>
+  <input type="file" id="questionFile" accept=".docx,.pdf">
+  <button onclick="uploadQuestions()">Upload & Preview</button>
+  <div id="previewArea"></div>
+  <button id="saveUploadBtn" style="display:none" onclick="saveUploadedQuestions()">Save Questions</button>
+
+  <!-- Questions Table -->
+  <div class="table-wrapper" style="margin-top:15px;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Question</th>
+          <th>A</th>
+          <th>B</th>
+          <th>C</th>
+          <th>D</th>
+          <th>Correct</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="questionsTableBody"></tbody>
+    </table>
   </div>
 
-  <!-- Students -->
-  <div id="students-section" style="display:none;">
-    <h3>Registered Students</h3>
-    <div class="search-box">
-      <input type="text" id="studentSearch" placeholder="Search by name, email, phone, parish" onkeyup="filterStudents()">
-    </div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Rank</th><th>Name</th><th>Email</th><th>Phone</th><th>Parish</th><th>Score</th>
-          </tr>
-        </thead>
-        <tbody id="studentsTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Leaderboard -->
-  <div id="leaderboard-section" style="display:none;">
-    <h3>Leaderboard</h3>
-    <button onclick="downloadLeaderboard()">Download CSV</button>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Rank</th><th>Name</th><th>Email</th><th>Phone</th><th>Parish</th><th>Score</th></tr>
-        </thead>
-        <tbody id="leaderboardTable"></tbody>
-      </table>
-    </div>
-  </div>
-
+  <!-- Add Question Manually -->
+  <h3>Add Question Manually</h3>
+  <form id="question-form">
+    <textarea id="questionText" placeholder="Enter question" required></textarea>
+    <input type="text" id="optionA" placeholder="Option A" required>
+    <input type="text" id="optionB" placeholder="Option B" required>
+    <input type="text" id="optionC" placeholder="Option C" required>
+    <input type="text" id="optionD" placeholder="Option D" required>
+    <select id="correctAnswer" required>
+      <option value="">Select Correct Answer</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+    </select>
+    <button type="submit">Add Question</button>
+  </form>
 </div>
 
 <script>
-// Sidebar hover active
-function showSection(section, el){
-  ['dashboard','questions','students','leaderboard'].forEach(s=>{
-    document.getElementById(s+'-section').style.display = (s===section)?'block':'none';
-  });
-  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
-  if(el) el.classList.add('active');
-}
-
-// Logout
-function logoutAdmin(){ localStorage.removeItem('adminLoggedIn'); location.reload(); }
-
-// Fetch Dashboard
-async function fetchDashboard(){
-  try {
-    const resStudents = await fetch(`/admin/students`);
-    const dataStudents = await resStudents.json();
-    const total = dataStudents.students?.length || 0;
-    document.getElementById('totalStudents').innerText = total;
-
-    // Students by parish
-    const parishCount = {};
-    dataStudents.students?.forEach(s=>{
-      const p = s.parish || 'N/A';
-      parishCount[p] = (parishCount[p]||0)+1;
-    });
-    const tbody = document.getElementById('studentsByParish');
-    tbody.innerHTML = '';
-    for(const [parish,count] of Object.entries(parishCount)){
-      tbody.innerHTML += `<tr><td>${parish}</td><td>${count}</td></tr>`;
-    }
-
-    // Questions count
-    const resQuestions = await fetch(`/admin/questions`);
-    const dataQ = await resQuestions.json();
-    document.getElementById('totalQuestions').innerText = dataQ.questions?.length || 0;
-
-  } catch(e){ console.error(e); }
-}
-
-// Fetch Students
-async function fetchStudents(){
-  try {
-    const res = await fetch(`/admin/students`);
-    const data = await res.json();
-    const tbody = document.getElementById('studentsTableBody');
-    tbody.innerHTML = '';
-    if(data.success && data.students.length>0){
-      const students = data.students.sort((a,b)=> (b.score||0) - (a.score||0));
-      students.forEach((s,i)=>{
-        tbody.innerHTML += `<tr class="${i<10?'top10':''}">
-          <td>${i+1}</td>
-          <td>${s.name}</td>
-          <td>${s.email||'-'}</td>
-          <td>${s.mobile||'-'}</td>
-          <td>${s.parish||'-'}</td>
-          <td>${s.score||0}</td>
-        </tr>`;
-      });
-    } else {
-      tbody.innerHTML = "<tr><td colspan='6'>No students yet</td></tr>";
-    }
-  } catch(e){ console.error(e); }
-}
-
-// Filter students
-function filterStudents(){
-  const filter = document.getElementById('studentSearch').value.toLowerCase();
-  document.querySelectorAll('#studentsTableBody tr').forEach(row=>{
-    const values = Array.from(row.children).slice(1).map(td=>td.innerText.toLowerCase());
+// ---------- SEARCH ----------
+function filterQuestions(){
+  const filter = document.getElementById('questionSearch').value.toLowerCase();
+  document.querySelectorAll('#questionsTableBody tr').forEach(row=>{
+    const values = Array.from(row.querySelectorAll('td span')).map(s=>s.innerText.toLowerCase());
     row.style.display = values.some(v=>v.includes(filter)) ? '' : 'none';
   });
 }
 
-// Fetch Leaderboard
-async function fetchLeaderboard(){
-  try {
-    const res = await fetch(`/admin/leaderboard`);
+// ---------- FETCH QUESTIONS ----------
+async function fetchQuestions(){
+  try{
+    const res = await fetch('/admin/questions');
     const data = await res.json();
-    const table = document.getElementById('leaderboardTable');
-    table.innerHTML = '';
-    if(data.success && data.leaderboard.length>0){
-      data.leaderboard.forEach((s,i)=>{
-        const cls = i<10?'top10':'';
-        table.innerHTML += `<tr class="${cls}"><td>${i+1}</td><td>${s.name}</td><td>${s.email||'-'}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score}</td></tr>`;
+    const tbody = document.getElementById('questionsTableBody');
+    tbody.innerHTML = '';
+    if(data.success && data.questions.length > 0){
+      data.questions.forEach((q,i)=>{
+        tbody.innerHTML += `<tr id="qrow${q.id}">
+          <td>${i+1}</td>
+          <td><span class="qtext">${q.question}</span></td>
+          <td><span class="optA">${q.optionA}</span></td>
+          <td><span class="optB">${q.optionB}</span></td>
+          <td><span class="optC">${q.optionC}</span></td>
+          <td><span class="optD">${q.optionD}</span></td>
+          <td><span class="correct">${q.answer}</span></td>
+          <td>
+            <button onclick="editQuestion(${q.id})">Edit</button>
+            <button onclick="deleteQuestion(${q.id})">Delete</button>
+          </td>
+        </tr>`;
       });
-    } else table.innerHTML = "<tr><td colspan='6'>No data</td></tr>";
+    } else tbody.innerHTML = "<tr><td colspan='8'>No questions yet</td></tr>";
   } catch(e){ console.error(e); }
 }
 
-// Download Leaderboard CSV
-function downloadLeaderboard(){
-  const table = document.getElementById('leaderboardTable');
-  let csv = [];
-  table.querySelectorAll('tr').forEach(row=>{
-    const cols = row.querySelectorAll('td,th');
-    csv.push(Array.from(cols).map(c=>`"${c.innerText}"`).join(','));
+// ---------- INLINE EDIT ----------
+function editQuestion(id){
+  const row = document.getElementById(`qrow${id}`);
+  ['qtext','optA','optB','optC','optD','correct'].forEach(cls=>{
+    const span = row.querySelector(`.${cls}`);
+    const val = span.innerText;
+    span.innerHTML = `<input type="text" value="${val}" style="width:90%">`;
   });
-  const blob = new Blob([csv.join('\n')], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `leaderboard.csv`;
-  a.click();
+  const btnCell = row.querySelector('td:last-child');
+  btnCell.innerHTML = `<button onclick="saveQuestion(${id})">Save</button> <button onclick="cancelEdit(${id})">Cancel</button>`;
+  row.style.background = '#f1f2f6'; // highlight
 }
 
-// Initial load
+async function saveQuestion(id){
+  const row = document.getElementById(`qrow${id}`);
+  const q = row.querySelector('.qtext input').value;
+  const A = row.querySelector('.optA input').value;
+  const B = row.querySelector('.optB input').value;
+  const C = row.querySelector('.optC input').value;
+  const D = row.querySelector('.optD input').value;
+  const ans = row.querySelector('.correct input').value;
+
+  try{
+    const res = await fetch(`/admin/question/${id}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q, optionA:A, optionB:B, optionC:C, optionD:D, answer:ans})
+    });
+    const data = await res.json();
+    if(data.success){ fetchQuestions(); alert('Question updated!'); }
+    else alert('Update failed');
+  } catch(e){ console.error(e); alert('Error'); }
+}
+
+function cancelEdit(id){ fetchQuestions(); }
+
+// ---------- DELETE ----------
+async function deleteQuestion(id){
+  if(!confirm('Delete this question?')) return;
+  try{
+    const res = await fetch(`/admin/question/${id}`,{method:'DELETE'});
+    const data = await res.json();
+    if(data.success) fetchQuestions(); else alert('Delete failed');
+  } catch(e){ console.error(e); alert('Error'); }
+}
+
+// ---------- ADD QUESTION MANUALLY ----------
+document.getElementById('question-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const question=document.getElementById('questionText').value;
+  const optionA=document.getElementById('optionA').value;
+  const optionB=document.getElementById('optionB').value;
+  const optionC=document.getElementById('optionC').value;
+  const optionD=document.getElementById('optionD').value;
+  const answer=document.getElementById('correctAnswer').value;
+  try{
+    const res = await fetch(`/addQuestion`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({question,optionA,optionB,optionC,optionD,answer})
+    });
+    const data = await res.json();
+    if(data.success){ alert('Question added!'); e.target.reset(); fetchQuestions(); }
+    else alert('Failed to add question');
+  } catch(e){ console.error(e); alert('Error'); }
+});
+
+// ---------- FILE UPLOAD ----------
+async function uploadQuestions(){
+  const fileInput = document.getElementById('questionFile');
+  if(!fileInput.files[0]) return alert("Select a file");
+  const formData = new FormData();
+  formData.append('questionFile', fileInput.files[0]);
+  try{
+    const res = await fetch('/uploadQuestionsFile', { method:'POST', body: formData });
+    const data = await res.json();
+    if(data.success){
+      document.getElementById('previewArea').innerHTML = data.previewHTML;
+      document.getElementById('saveUploadBtn').style.display='inline-block';
+    } else alert(data.message || 'Upload failed');
+  } catch(e){ console.error(e); alert('Upload error'); }
+}
+
+async function saveUploadedQuestions(){
+  try{
+    const res = await fetch('/saveUploadedQuestions',{method:'POST'});
+    const data = await res.json();
+    if(data.success){ 
+      alert('Questions saved'); 
+      document.getElementById('previewArea').innerHTML=''; 
+      document.getElementById('saveUploadBtn').style.display='none'; 
+      fetchQuestions(); 
+    } else alert(data.message || 'Save failed');
+  } catch(e){ console.error(e); alert('Error'); }
+}
+
+// ---------- INITIAL LOAD ----------
 window.onload = function(){
   fetchDashboard();
   fetchStudents();
   fetchLeaderboard();
+  fetchQuestions();
 };
-</script>
-</body>
-</html>
