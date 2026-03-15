@@ -266,10 +266,29 @@ cursor:pointer;
 .goBack{background:#e84118;color:white;}
 .submitAnyway{background:#27ae60;color:white;}
 
+/* ---------- FULLSCREEN BUTTON ---------- */
+
+#startExamBtn{
+position:fixed;
+top:10px;
+right:10px;
+z-index:500;
+padding:10px 20px;
+background:#27ae60;
+color:white;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- FULLSCREEN START BUTTON -->
+<button id="startExamBtn" onclick="startExam()">Start Exam</button>
 
 <div class="container">
 
@@ -361,6 +380,21 @@ Unanswered
 let questions=[];
 let answers=JSON.parse(localStorage.getItem("answers")||"{}");
 
+/* ---------- FULLSCREEN MODE ---------- */
+
+function startExam(){
+  if(document.documentElement.requestFullscreen){
+    document.documentElement.requestFullscreen();
+  }
+  document.getElementById("startExamBtn").style.display="none";
+}
+
+/* ---------- WARNING BEFORE LEAVING PAGE ---------- */
+
+window.onbeforeunload=function(){
+  return "You are currently taking an exam. Leaving will affect your submission.";
+}
+
 /* ---------- LOAD QUESTIONS ---------- */
 
 async function loadQuiz(){
@@ -368,7 +402,9 @@ async function loadQuiz(){
 const res=await fetch("/questions");
 const data=await res.json();
 
+/* RANDOMIZE QUESTIONS */
 questions=data.questions;
+questions.sort(()=>Math.random()-0.5);
 
 document.getElementById("totalQuestions").innerText=questions.length;
 
@@ -377,14 +413,31 @@ let nav="";
 
 questions.forEach((q,i)=>{
 
+/* RANDOMIZE OPTIONS */
+let options=[
+  {key:"A",text:q.optionA},
+  {key:"B",text:q.optionB},
+  {key:"C",text:q.optionC},
+  {key:"D",text:q.optionD}
+];
+options.sort(()=>Math.random()-0.5);
+
+let optionsHTML="";
+options.forEach(op=>{
+optionsHTML+=`
+<label>
+<input type="radio" name="q${q.id}" value="${op.key}" onchange="saveAnswer(${q.id},'${op.key}')">
+${op.text}
+</label>
+`;
+});
+
 html+=`
 <div class="question" id="q${q.id}">
 <h3>${i+1}. ${q.question}</h3>
 
-<label><input type="radio" name="q${q.id}" value="A" onchange="saveAnswer(${q.id},'A')"> ${q.optionA}</label>
-<label><input type="radio" name="q${q.id}" value="B" onchange="saveAnswer(${q.id},'B')"> ${q.optionB}</label>
-<label><input type="radio" name="q${q.id}" value="C" onchange="saveAnswer(${q.id},'C')"> ${q.optionC}</label>
-<label><input type="radio" name="q${q.id}" value="D" onchange="saveAnswer(${q.id},'D')"> ${q.optionD}</label>
+${optionsHTML}
+
 </div>
 `;
 
@@ -548,7 +601,25 @@ body:JSON.stringify({studentId,answers})
 
 const data=await res.json();
 
-alert("Your Score: "+data.score);
+/* ---------- SCORE BREAKDOWN ---------- */
+let total=questions.length;
+let answered=Object.keys(answers).length;
+let correct=data.correct||data.score; // backend can send correct count
+let wrong=correct ? answered-correct : 0;
+let unanswered=total-answered;
+let percentage=Math.round((correct/total)*100);
+
+alert(
+`EXAM RESULT
+
+Total Questions: ${total}
+Answered: ${answered}
+Correct: ${correct}
+Wrong: ${wrong}
+Unanswered: ${unanswered}
+
+Final Score: ${percentage}%`
+);
 
 localStorage.clear();
 
