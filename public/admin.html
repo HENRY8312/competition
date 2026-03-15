@@ -161,21 +161,24 @@ Delete All Questions
 </div>
 
 <script>
+// ---------- ADMIN PASSWORD ----------
+const ADMIN_PASSWORD = 'yourpassword'; // set your password here
 
-// ------------------ ADMIN PASSWORD PROTECTION ------------------
-(function(){
-  const ADMIN_PASSWORD = 'math123'; // <-- Set your password here
-  if(!localStorage.getItem('adminLoggedIn')){
-    let input = prompt("Enter Admin Password to access the dashboard:");
-    if(input === null || input !== ADMIN_PASSWORD){
-      alert("Incorrect password! Access denied.");
-      window.location.href = "index.html";
-    } else {
-      localStorage.setItem('adminLoggedIn', 'true');
-    }
+window.onload = function() {
+  const enteredPassword = prompt("Enter admin password:");
+  if (enteredPassword !== ADMIN_PASSWORD) {
+    alert("Incorrect password! Access denied.");
+    window.location.href = 'index.html'; // redirect if wrong
+    return; // stop running the rest of the script
   }
-})();
-  
+
+  // ------------------ INITIAL LOAD ------------------
+  fetchDashboard();
+  fetchStudents();
+  fetchLeaderboard();
+  fetchQuestions();
+};
+
 // ------------------ Section Switch ------------------
 function showSection(section){
   ['dashboard','questions','students','leaderboard'].forEach(s=>{
@@ -185,7 +188,6 @@ function showSection(section){
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
   document.querySelector(`.sidebar a[onclick="showSection('${section}')"]`).classList.add('active');
 }
-function logoutAdmin(){ localStorage.removeItem('adminLoggedIn'); location.href = 'index.html'; }
 
 // ------------------ DASHBOARD ------------------
 async function fetchDashboard(){
