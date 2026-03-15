@@ -18,12 +18,20 @@ box-sizing:border-box;
 
 body{
 font-family:"Segoe UI", Arial, sans-serif;
-background:linear-gradient(135deg,#007bff,#00c6ff);
+background:linear-gradient(-45deg,#007bff,#00c6ff,#00aaff,#0056b3);
+background-size:400% 400%;
+animation:gradient 10s ease infinite;
 min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
 padding:20px;
+}
+
+@keyframes gradient{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
 }
 
 .login-container{
@@ -36,6 +44,25 @@ box-shadow:0 12px 30px rgba(0,0,0,0.2);
 text-align:center;
 }
 
+/* Competition branding */
+
+.logo img{
+width:70px;
+margin-bottom:10px;
+}
+
+.logo h1{
+font-size:20px;
+color:#007bff;
+margin-bottom:5px;
+}
+
+.logo p{
+font-size:13px;
+color:#666;
+margin-bottom:15px;
+}
+
 h2{
 margin-bottom:20px;
 color:#333;
@@ -43,13 +70,34 @@ font-size:26px;
 font-weight:bold;
 }
 
+.notice{
+background:#f1f7ff;
+padding:10px;
+border-radius:6px;
+font-size:13px;
+margin-bottom:10px;
+color:#333;
+}
+
 form{
 margin-top:10px;
 }
 
+.input-box{
+position:relative;
+}
+
+.input-box span{
+position:absolute;
+left:10px;
+top:50%;
+transform:translateY(-50%);
+font-size:16px;
+}
+
 input{
 width:100%;
-padding:14px;
+padding:14px 14px 14px 35px;
 margin:10px 0;
 border-radius:8px;
 border:1px solid #ccc;
@@ -61,6 +109,21 @@ input:focus{
 border-color:#007bff;
 outline:none;
 box-shadow:0 0 5px rgba(0,123,255,0.3);
+}
+
+/* Password toggle */
+
+.password-box{
+position:relative;
+}
+
+.password-box .toggle{
+position:absolute;
+right:10px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+font-size:16px;
 }
 
 button{
@@ -82,6 +145,27 @@ background:linear-gradient(45deg,#0056b3,#0088cc);
 transform:scale(1.03);
 }
 
+.remember{
+font-size:14px;
+text-align:left;
+margin-top:5px;
+}
+
+.forgot{
+font-size:13px;
+margin-top:8px;
+text-align:right;
+}
+
+.forgot a{
+color:#007bff;
+text-decoration:none;
+}
+
+.forgot a:hover{
+text-decoration:underline;
+}
+
 .register-link{
 margin-top:20px;
 font-size:15px;
@@ -95,6 +179,17 @@ font-weight:bold;
 
 .register-link a:hover{
 text-decoration:underline;
+}
+
+.admin-link{
+margin-top:10px;
+font-size:13px;
+}
+
+.footer{
+margin-top:25px;
+font-size:12px;
+color:#888;
 }
 
 /* Mobile */
@@ -123,15 +218,44 @@ font-size:15px;
 
 <div class="login-container">
 
+<!-- Competition Branding -->
+
+<div class="logo">
+<img src="logo.png" alt="Competition Logo">
+<h1>National Mathematics Competition</h1>
+<p>2026 Edition</p>
+</div>
+
 <h2>Student Login</h2>
+
+<div class="notice">
+⚠ Use the email and password you registered with.
+</div>
 
 <form id="loginForm">
 
+<div class="input-box">
+<span>📧</span>
 <input type="email" id="email" placeholder="Email Address" required>
+</div>
 
-<input type="password" id="password" placeholder="Password" required>
+<div class="password-box">
+<span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);">🔒</span>
+<input type="password" id="password" placeholder="Password" required style="padding-left:35px;">
+<span class="toggle" onclick="togglePassword()">👁</span>
+</div>
 
-<button type="submit">Login</button>
+<div class="remember">
+<label>
+<input type="checkbox" id="remember"> Remember me
+</label>
+</div>
+
+<div class="forgot">
+<a href="forgot.html">Forgot Password?</a>
+</div>
+
+<button type="submit" id="loginBtn">Login</button>
 
 </form>
 
@@ -139,16 +263,52 @@ font-size:15px;
 Don't have an account? <a href="register.html">Register</a>
 </div>
 
+<div class="admin-link">
+Admin? <a href="admin.html">Login here</a>
+</div>
+
+<div class="footer">
+© 2026 National Mathematics Competition
+</div>
+
 </div>
 
 <script>
+
+/* Prevent logged-in users from returning */
+
+if(localStorage.getItem("studentId")){
+window.location="quiz.html";
+}
+
+/* Show / hide password */
+
+function togglePassword(){
+const pass=document.getElementById("password");
+
+if(pass.type==="password"){
+pass.type="text";
+}else{
+pass.type="password";
+}
+}
 
 document.getElementById("loginForm").addEventListener("submit", async function(e){
 
 e.preventDefault();
 
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
+const btn=document.getElementById("loginBtn");
+
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value.trim();
+
+if(password.length < 6){
+alert("Password must be at least 6 characters");
+return;
+}
+
+btn.innerText="Logging in...";
+btn.disabled=true;
 
 try{
 
@@ -171,6 +331,8 @@ window.location="quiz.html";
 }else{
 
 alert("Invalid email or password");
+btn.innerText="Login";
+btn.disabled=false;
 
 }
 
@@ -179,6 +341,9 @@ alert("Invalid email or password");
 console.log(err);
 
 alert("Unable to login. Please try again.");
+
+btn.innerText="Login";
+btn.disabled=false;
 
 }
 
