@@ -162,7 +162,7 @@ Delete All Questions
 
 <script>
 // ---------- ADMIN PASSWORD ----------
-const ADMIN_PASSWORD = 'yourpassword'; // set your password here
+const ADMIN_PASSWORD = 'adminwccrm8312'; // set your password here
 
 window.onload = function() {
   const enteredPassword = prompt("Enter admin password:");
@@ -189,6 +189,11 @@ function showSection(section){
   document.querySelector(`.sidebar a[onclick="showSection('${section}')"]`).classList.add('active');
 }
 
+// ------------------ LOGOUT ------------------
+function logoutAdmin(){ 
+  localStorage.removeItem('adminLoggedIn'); 
+  location.href = 'index.html'; 
+}
 // ------------------ DASHBOARD ------------------
 async function fetchDashboard(){
   try{
