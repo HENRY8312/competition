@@ -191,7 +191,7 @@ function showSection(section){
 
 // ------------------ LOGOUT ------------------
 function logoutAdmin(){ 
-  localStorage.removeItem('adminLoggedIn'); 
+  // No need to store session, just redirect, localStorage.removeItem('adminLoggedIn'); 
   location.href = 'index.html'; 
 }
 // ------------------ DASHBOARD ------------------
