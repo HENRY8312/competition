@@ -15,8 +15,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // serve static files
 
 // ---------------- QUIZ SCHEDULE ----------------
-const quizStartTime = new Date("2026-03-14T06:30:00");
-const quizEndTime = new Date("2026-03-15T11:00:00");
+const quizStartTime = new Date("2026-03-15T06:30:00");
+const quizEndTime = new Date("2026-03-17T11:00:00");
 
 // ------------------- DATABASE -------------------
 const db = mysql.createConnection({
