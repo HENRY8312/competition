@@ -307,23 +307,51 @@ document.getElementById("question-form").addEventListener("submit", async functi
 // ------------------ UPLOAD QUESTIONS ------------------
 let uploadedQuestions = [];
 async function uploadQuestions(){
-  const file = document.getElementById('questionFile').files[0];
-  if(!file) { alert("Select a file first"); return; }
+const file = document.getElementById('questionFile').files[0];
+
+  if(!file){
+    alert("Select a file first");
+    return;
+  }
+
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file",file);
 
   try{
-    const res = await fetch('/admin/uploadQuestions',{method:'POST',body:formData});
-    const data = await res.json();
-    if(data.success){
-      uploadedQuestions = data.questions || [];
-      const preview = document.getElementById('previewArea');
-      preview.innerHTML = uploadedQuestions.map((q,i)=>`<p>${i+1}. ${q.question}</p>`).join('');
-      document.getElementById('saveUploadBtn').style.display='inline-block';
-    }else alert(data.message || "Upload failed");
-  }catch(err){ console.error(err); alert("Server error"); }
-}
 
+    const res = await fetch('/admin/upload-preview',{
+      method:'POST',
+      body:formData
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+
+      uploadedQuestions = data.questions;
+
+      const preview = document.getElementById('previewArea');
+
+      preview.innerHTML = uploadedQuestions.map((q,i)=>`
+        <p><b>${i+1}.</b> ${q.question}</p>
+      `).join('');
+
+      document.getElementById('saveUploadBtn').style.display='inline-block';
+
+    }else{
+
+      alert(data.message || "Upload failed");
+
+    }
+
+  }catch(err){
+
+    console.error(err);
+    alert("Server error");
+
+  }
+
+}
 // ------------------ SAVE UPLOADED QUESTIONS ------------------
 async function saveUploadedQuestions(){
   if(uploadedQuestions.length===0){ alert("No questions to save"); return; }
