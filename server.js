@@ -264,6 +264,74 @@ app.post("/admin/uploadQuestions", upload.single("file"), async (req, res) => {
     }
 });
 
+// ================= NEW ROUTES FOR PREVIEW AND SAVE =================
+
+// Preview uploaded questions before saving
+app.post("/admin/upload-preview", upload.single("file"), async (req, res) => {
+    const file = req.file;
+    if (!file) return res.json({ success: false, message: "No file uploaded" });
+
+    try {
+        let text = "";
+
+        if (file.mimetype === "application/pdf") {
+            const data = fs.readFileSync(file.path);
+            const pdf = await pdfParse(data);
+            text = pdf.text;
+        } else if (file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+            const result = await mammoth.extractRawText({ path: file.path });
+            text = result.value;
+        } else {
+            return res.json({ success: false, message: "Unsupported file type" });
+        }
+
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        let questions = [];
+        let current = {};
+
+        lines.forEach(line => {
+            if (line.match(/^\d+\./)) {
+                if (current.question) questions.push(current);
+                current = { question: line.replace(/^\d+\./, "").trim() };
+            } else if (line.startsWith("A.")) current.optionA = line.replace("A.", "").trim();
+            else if (line.startsWith("B.")) current.optionB = line.replace("B.", "").trim();
+            else if (line.startsWith("C.")) current.optionC = line.replace("C.", "").trim();
+            else if (line.startsWith("D.")) current.optionD = line.replace("D.", "").trim();
+            else if (line.toLowerCase().startsWith("answer")) current.answer = line.split(":")[1].trim();
+        });
+
+        if (current.question) questions.push(current);
+
+        fs.unlinkSync(file.path);
+
+        res.json({ success: true, questions });
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false, message: "File processing failed" });
+    }
+});
+
+// Save uploaded questions to DB
+app.post("/admin/save-uploaded-questions", (req, res) => {
+    const questions = req.body.questions;
+    if (!questions || questions.length === 0) return res.json({ success: false, message: "No questions received" });
+
+    let inserted = 0;
+
+    questions.forEach(q => {
+        const sql = `
+            INSERT INTO questions
+            (question, optionA, optionB, optionC, optionD, answer)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        db.query(sql, [q.question || "", q.optionA || "", q.optionB || "", q.optionC || "", q.optionD || "", q.answer || ""], (err) => {
+            if (!err) inserted++;
+        });
+    });
+
+    res.json({ success: true, inserted });
+});
+
 // --- DELETE QUESTION ---
 app.delete("/admin/question/:id", (req, res) => {
     const id = req.params.id;
