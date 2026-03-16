@@ -172,8 +172,8 @@ const ADMIN_PASSWORD = 'adminwccrm8312'; // set your password here
   }
 })();
 
-  // ------------------ INITIAL LOAD ------------------
-  window.onload = function(){
+// ------------------ INITIAL LOAD ------------------
+window.onload = function(){
   fetchDashboard();
   fetchStudents();
   fetchLeaderboard();
@@ -192,9 +192,9 @@ function showSection(section){
 
 // ------------------ LOGOUT ------------------
 function logoutAdmin(){ 
-  // No need to store session, just redirect, localStorage.removeItem('adminLoggedIn'); 
   location.href = 'index.html'; 
 }
+
 // ------------------ DASHBOARD ------------------
 async function fetchDashboard(){
   try{
@@ -202,7 +202,6 @@ async function fetchDashboard(){
     const data = await res.json();
     document.getElementById('totalStudents').innerText = data.students.length || 0;
 
-    // Students by parish
     const parishMap = {};
     data.students.forEach(s=>{
       const p = s.parish || 'Unknown';
@@ -214,7 +213,6 @@ async function fetchDashboard(){
       tbody.innerHTML += `<tr><td>${p}</td><td>${parishMap[p]}</td></tr>`;
     });
 
-    // Total questions
     const qRes = await fetch('/admin/questions');
     const qData = await qRes.json();
     document.getElementById('totalQuestions').innerText = qData.questions.length || 0;
@@ -243,6 +241,7 @@ async function fetchQuestions(){
     } else tbody.innerHTML="<tr><td colspan='8'>No questions yet</td></tr>";
   } catch(e){ console.error(e); }
 }
+
 function filterQuestions(){
   const f = document.getElementById('questionSearch').value.toLowerCase();
   document.querySelectorAll('#questionsTableBody tr').forEach(row=>{
@@ -250,6 +249,7 @@ function filterQuestions(){
     row.style.display = values.some(v=>v.includes(f)) ? '' : 'none';
   });
 }
+
 async function deleteQuestion(id){
   if(confirm('Delete this question?')){
     const res = await fetch(`/admin/question/${id}`,{method:'DELETE'});
@@ -257,47 +257,30 @@ async function deleteQuestion(id){
     if(data.success) fetchQuestions(); else alert('Failed');
   }
 }
+
 //-------------- DELETE ALL QUESTIONS ----------------
-  async function deleteAllQuestions(){
+async function deleteAllQuestions(){
+  if(!confirm("Are you sure you want to delete ALL questions? This cannot be undone.")) return;
 
-if(!confirm("Are you sure you want to delete ALL questions? This cannot be undone.")){
-return;
+  try{
+    const res = await fetch("/admin/delete-all-questions",{method:"DELETE"});
+    const data = await res.json();
+    if(data.success){
+      alert("All questions deleted successfully");
+      fetchQuestions();
+      fetchDashboard();
+    }else{
+      alert("Failed to delete questions");
+    }
+  }catch(err){
+    console.error(err);
+    alert("Server error");
+  }
 }
 
-try{
-
-const res = await fetch("/admin/delete-all-questions",{
-method:"DELETE"
-});
-
-const data = await res.json();
-
-if(data.success){
-
-alert("All questions deleted successfully");
-
-fetchQuestions();
-fetchDashboard();
-
-}else{
-
-alert("Failed to delete questions");
-
-}
-
-}catch(err){
-
-console.error(err);
-alert("Server error");
-
-}
-
-}
-  
-  // ------------------ ADD QUESTION ------------------
+// ------------------ ADD QUESTION ------------------
 document.getElementById("question-form").addEventListener("submit", async function(e){
   e.preventDefault();
-
   const question = document.getElementById("questionText").value;
   const optionA = document.getElementById("optionA").value;
   const optionB = document.getElementById("optionB").value;
@@ -308,37 +291,64 @@ document.getElementById("question-form").addEventListener("submit", async functi
   try{
     const res = await fetch("/admin/add-question",{
       method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        question,
-        optionA,
-        optionB,
-        optionC,
-        optionD,
-        answer
-      })
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({question,optionA,optionB,optionC,optionD,answer})
     });
-
     const data = await res.json();
-
     if(data.success){
       alert("Question added successfully");
-
       document.getElementById("question-form").reset();
+      fetchQuestions();
+      fetchDashboard();
+    }else alert("Failed to add question");
+  }catch(err){ console.error(err); alert("Server error while adding question"); }
+});
 
-      fetchQuestions(); // reload questions table
-      fetchDashboard(); // update total questions
-    }else{
-      alert("Failed to add question");
+// ------------------ UPLOAD QUESTIONS ------------------
+let uploadedQuestions = [];
+async function uploadQuestions(){
+  const file = document.getElementById('questionFile').files[0];
+  if(!file) { alert("Select a file first"); return; }
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try{
+    const res = await fetch('/admin/uploadQuestions',{method:'POST',body:formData});
+    const data = await res.json();
+    if(data.success){
+      uploadedQuestions = data.questions || [];
+      const preview = document.getElementById('previewArea');
+      preview.innerHTML = uploadedQuestions.map((q,i)=>`<p>${i+1}. ${q.question}</p>`).join('');
+      document.getElementById('saveUploadBtn').style.display='inline-block';
+    }else alert(data.message || "Upload failed");
+  }catch(err){ console.error(err); alert("Server error"); }
+}
+
+// ------------------ SAVE UPLOADED QUESTIONS ------------------
+async function saveUploadedQuestions(){
+  if(uploadedQuestions.length===0){ alert("No questions to save"); return; }
+  try{
+    // Save each question to server
+    for(const q of uploadedQuestions){
+      await fetch("/admin/add-question",{
+        method:'POST',
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(q)
+      });
     }
 
-  }catch(err){
-    console.error(err);
-    alert("Server error while adding question");
-  }
-});
+    alert("Uploaded questions saved successfully");
+
+    // Clear preview and reset
+    uploadedQuestions = [];
+    document.getElementById('previewArea').innerHTML='';
+    document.getElementById('saveUploadBtn').style.display='none';
+
+    // ----------------- IMMEDIATE TABLE & DASHBOARD UPDATE -----------------
+    await fetchQuestions();
+    await fetchDashboard();
+  }catch(err){ console.error(err); alert("Error saving questions"); }
+}
 
 // ------------------ STUDENTS ------------------
 async function fetchStudents(){
@@ -351,12 +361,13 @@ async function fetchStudents(){
       data.students.forEach((s,i)=>{
         tbody.innerHTML += `<tr>
           <td>${i+1}</td><td>${s.name}</td><td>${s.email||'-'}</td>
-          <td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>
+          <td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td></td>
         </tr>`;
       });
     } else tbody.innerHTML="<tr><td colspan='6'>No students yet</td></tr>";
-  } catch(e){ console.error(e); }
+  }catch(e){ console.error(e); }
 }
+
 function filterStudents(){
   const f = document.getElementById('studentSearch').value.toLowerCase();
   document.querySelectorAll('#studentsTableBody tr').forEach(row=>{
@@ -380,8 +391,9 @@ async function fetchLeaderboard(){
           <td>${s.email||'-'}</td><td>${s.mobile||'-'}</td><td>${s.parish||'-'}</td><td>${s.score}</td></tr>`;
       });
     } else tbody.innerHTML="<tr><td colspan='6'>No data</td></tr>";
-  } catch(e){ console.error(e); }
+  }catch(e){ console.error(e); }
 }
+
 function downloadLeaderboard(){
   const table=document.getElementById('leaderboardTable');
   let csv=[];
@@ -395,14 +407,6 @@ function downloadLeaderboard(){
   a.download = `leaderboard.csv`;
   a.click();
 }
-
-// ------------------ INITIAL LOAD ------------------
-window.onload = function(){
-  fetchDashboard();
-  fetchStudents();
-  fetchLeaderboard();
-  fetchQuestions();
-};
 </script>
 </body>
 </html>
