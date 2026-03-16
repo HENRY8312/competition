@@ -9,6 +9,13 @@ const fs = require("fs");
 const mammoth = require("mammoth"); // Word (.docx) parsing
 const pdfParse = require("pdf-parse"); // PDF parsing
 
+// ------------------- ENSURE UPLOADS FOLDER EXISTS -------------------
+const uploadDir = path.join(__dirname, "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
