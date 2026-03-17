@@ -21,12 +21,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // serve static files
 
-// ------------------- UTF-8 FOR JSON -------------------
-app.use((req, res, next) => {
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    next();
-});
-
 // ---------------- QUIZ SCHEDULE ----------------
 const quizStartTime = new Date("2026-03-15T06:30:00");
 const quizEndTime = new Date("2026-03-17T11:00:00");
@@ -161,7 +155,6 @@ app.post("/admin/add-question", (req,res)=>{
         res.json({success:true});
     });
 });
-
 // --- SUBMIT QUIZ ---
 app.post("/submitQuiz", (req, res) => {
     const { studentId, answers } = req.body;
@@ -252,19 +245,22 @@ app.post("/admin/uploadQuestions", upload.single("file"), async (req, res) => {
         if (file.mimetype === "application/pdf") {
             const data = fs.readFileSync(file.path);
             const pdf = await pdfParse(data);
-            text = pdf.text; // preserves symbols
+            text = pdf.text;
         } else if (file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
             const result = await mammoth.extractRawText({ path: file.path });
-            text = result.value; // preserves symbols
+            text = result.value;
         } else {
             return res.json({ success: false, message: "Unsupported file type" });
         }
 
+        // Split into questions based on newlines or numbering (basic)
         const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
         for (let line of lines) {
+            // Skip if line too short
             if (line.length < 5) continue;
+            // Attempt auto-add (you can improve parsing)
             const sql = "INSERT IGNORE INTO questions (question, optionA, optionB, optionC, optionD, answer) VALUES (?,?,?,?,?,?)";
-            db.query(sql, [line, "A", "B", "C", "D", "A"]);
+            db.query(sql, [line, "A", "B", "C", "D", "A"]); // default options, admin can edit later
         }
 
         res.json({ success: true, message: "File processed successfully" });
@@ -272,13 +268,13 @@ app.post("/admin/uploadQuestions", upload.single("file"), async (req, res) => {
         console.error(err);
         res.json({ success: false, message: "File processing failed" });
     } finally {
-        fs.unlinkSync(file.path);
+        fs.unlinkSync(file.path); // clean up uploaded file
     }
 });
 
 // ================= NEW ROUTES FOR PREVIEW AND SAVE =================
 
-// Preview uploaded questions
+// Preview uploaded questions before saving
 app.post("/admin/upload-preview", upload.single("file"), async (req, res) => {
     const file = req.file;
     if (!file) return res.json({ success: false, message: "No file uploaded" });
@@ -289,10 +285,10 @@ app.post("/admin/upload-preview", upload.single("file"), async (req, res) => {
         if (file.mimetype === "application/pdf") {
             const data = fs.readFileSync(file.path);
             const pdf = await pdfParse(data);
-            text = pdf.text; // UTF-8 preserved
+            text = pdf.text;
         } else if (file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
             const result = await mammoth.extractRawText({ path: file.path });
-            text = result.value; // UTF-8 preserved
+            text = result.value;
         } else {
             return res.json({ success: false, message: "Unsupported file type" });
         }
@@ -323,7 +319,7 @@ app.post("/admin/upload-preview", upload.single("file"), async (req, res) => {
     }
 });
 
-// Save uploaded questions
+// Save uploaded questions to DB
 app.post("/admin/save-uploaded-questions", (req, res) => {
     const questions = req.body.questions;
     if (!questions || questions.length === 0) return res.json({ success: false, message: "No questions received" });
@@ -336,14 +332,9 @@ app.post("/admin/save-uploaded-questions", (req, res) => {
             (question, optionA, optionB, optionC, optionD, answer)
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-        db.query(sql, [
-            q.question || "",
-            q.optionA || "",
-            q.optionB || "",
-            q.optionC || "",
-            q.optionD || "",
-            q.answer || ""
-        ], (err) => { if (!err) inserted++; });
+        db.query(sql, [q.question || "", q.optionA || "", q.optionB || "", q.optionC || "", q.optionD || "", q.answer || ""], (err) => {
+            if (!err) inserted++;
+        });
     });
 
     res.json({ success: true, inserted });
@@ -360,15 +351,19 @@ app.delete("/admin/question/:id", (req, res) => {
 
 //------ DELETE ALL QUESTIONS-------------------
 app.delete("/admin/delete-all-questions",(req,res)=>{
-    db.query("DELETE FROM questions",(err,result)=>{
-        if(err){
-            console.log(err);
-            return res.json({success:false});
-        }
-        res.json({success:true});
-    });
+
+db.query("DELETE FROM questions",(err,result)=>{
+
+if(err){
+console.log(err);
+return res.json({success:false});
+}
+
+res.json({success:true});
+
 });
 
+});
 // --- DELETE STUDENT ---
 app.delete("/admin/student/:id", (req, res) => {
     const id = req.params.id;
