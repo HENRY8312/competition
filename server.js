@@ -143,7 +143,6 @@ app.post("/admin/add-question", (req,res)=>{
     .replace(/−/g, "-")   // replace unicode minus with normal hyphen
     .replace(/π/g, "pi")  // optional
     .replace(/√/g, "sqrt"); // optional
-    .replace(/√/g, "sqrt");
 }
     let {question, optionA, optionB, optionC, optionD, answer} = req.body;
 //question=normalizeText(question)
