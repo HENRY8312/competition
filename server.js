@@ -138,8 +138,14 @@ app.get("/admin/questions", (req, res) => {
 });
 
 app.post("/admin/add-question", (req,res)=>{
-    const {question, optionA, optionB, optionC, optionD, answer} = req.body;
-
+    function normalizeText(text) {
+  return text
+    .replace(/−/g, "-")   // replace unicode minus with normal hyphen
+    .replace(/π/g, "pi")  // optional
+    .replace(/√/g, "sqrt"); // optional
+}
+    let {question, optionA, optionB, optionC, optionD, answer} = req.body;
+question=normalizeText(question)
     const sql = `
         INSERT INTO questions
         (question, optionA, optionB, optionC, optionD, answer)
