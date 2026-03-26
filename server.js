@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, "public"))); // serve static files
 
 // ---------------- QUIZ SCHEDULE ----------------
 const quizStartTime = new Date("2026-03-20T06:30:00");
-const quizEndTime = new Date("2026-03-30T11:00:00");
+const quizEndTime = new Date("2026-03-31T11:00:00");
 
 // ------------------- DATABASE -------------------
 const db = mysql.createConnection({
