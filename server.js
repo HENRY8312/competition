@@ -22,15 +22,19 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // serve static files
 
 // ---------------- QUIZ SCHEDULE ----------------
-const quizStartTime = new Date("2026-03-20T06:30:00");
-const quizEndTime = new Date("2026-03-31T11:00:00");
+// ---------------- QUIZ SCHEDULE (Nigeria Time - WAT UTC+1) ----------------
+const quizStartTime = new Date("2026-05-02T11:00:00+01:00");
+const quizEndTime = new Date("2026-05-02T12:00:00+01:00");
+
+// ---------------- REGISTRATION DEADLINE ----------------
+const registrationDeadline = new Date("2026-05-02T11:00:00+01:00"); // 12 noon WAT
 
 // ------------------- DATABASE -------------------
 const db = mysql.createConnection({
-    host: "sql8.freesqldatabase.com",
-    user: "sql8819909",
-    password: "ig6cdQwVAh",
-    database: "sql8819909",
+    host: "localhost",
+    user: "qlouquvl_sql8819909",
+    password: "Henry4l!fe8312",
+    database: "qlouquvl_sql8819909",
     charset: "utf8mb4"  // critical for symbols
 });
 
@@ -82,6 +86,16 @@ app.get("/quizTime",(req,res)=>{
 
 // --- REGISTER STUDENT ---
 app.post("/register", (req, res) => {
+    
+    const now = new Date();
+
+    // 🚫 Block registration after deadline
+    if (now > registrationDeadline) {
+        return res.json({
+            success: false,
+            message: "Registration has closed. Deadline was 30th April 2026 by 12:00 PM."
+        });
+    }
     const { name, email, phone, studentClass, parish, yearsWatchman, password } = req.body;
     if (!name || !email || !phone || !studentClass || !parish || !yearsWatchman || !password) {
         return res.json({ success: false, message: "All fields required" });
@@ -168,30 +182,65 @@ app.post("/admin/add-question", (req,res)=>{
 });
 // --- SUBMIT QUIZ ---
 app.post("/submitQuiz", (req, res) => {
-    const { studentId, answers } = req.body;
-    if (!studentId || !answers) return res.json({ success: false, message: "Invalid data" });
+    const { studentId, answers, questionIds } = req.body;
+    if (!studentId || !answers || !questionIds) 
+        return res.json({ success: false, message: "Invalid data" });
 
     db.query("SELECT * FROM results WHERE student_id=?", [studentId], (err1, existing) => {
         if (err1) return res.json({ success: false, message: "Database error" });
-        if (existing.length > 0) return res.json({ success: true, score: existing[0].score, message: "Already submitted" });
 
-        db.query("SELECT id, answer FROM questions", (err2, questions) => {
+        // ✅ If already submitted, return full stats
+        if (existing.length > 0) {
+            return res.json({
+                success: true,
+                score: existing[0].score,
+                correct: existing[0].score,
+                wrong: 0,
+                answered: existing[0].score,
+                total: questionIds.length,
+                message: "Already submitted"
+            });
+        }
+
+        // Fetch only questions that are part of this quiz
+        const placeholders = questionIds.map(() => "?").join(",");
+        const sql = `SELECT id, answer FROM questions WHERE id IN (${placeholders})`;
+        db.query(sql, questionIds, (err2, questions) => {
             if (err2) return res.json({ success: false, message: "Error fetching questions" });
 
             let score = 0;
+            let correct = 0;
+            let wrong = 0;
+            let answered = 0;
+
             questions.forEach(q => {
                 const key = "q" + q.id;
-                if (answers[key] && answers[key] === q.answer) score++;
+                if (answers[key]) {
+                    answered++;
+                    if (answers[key].toUpperCase() === q.answer.toUpperCase()) {
+                        score++;
+                        correct++;
+                    } else {
+                        wrong++;
+                    }
+                }
             });
 
             db.query("INSERT INTO results (student_id, score) VALUES (?,?)", [studentId, score], (err3) => {
                 if (err3) return res.json({ success: false, message: "Error saving score" });
-                res.json({ success: true, score });
+
+                res.json({
+                    success: true,
+                    score,
+                    correct,
+                    wrong,
+                    answered,
+                    total: questions.length
+                });
             });
         });
     });
 });
-
 // --- ADMIN LEADERBOARD ---
 app.get("/admin/leaderboard", (req, res) => {
     const sql = `
