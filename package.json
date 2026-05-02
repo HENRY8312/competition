@@ -4,7 +4,11 @@
   "description": "A timed mathematics competition web app with student login, quiz, and admin leaderboard",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "gcp-build": "npm install"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "keywords": [
     "math",
