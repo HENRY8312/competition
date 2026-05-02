@@ -1,141 +1,120 @@
-// ------------------- TIMER -------------------
-let time = 3600; // 60 minutes in seconds
-let timerInterval;
-
-function startTimer() {
-    const timerElement = document.getElementById("timer");
-    timerInterval = setInterval(() => {
-        let minutes = Math.floor(time / 60);
-        let seconds = time % 60;
-        timerElement.innerText = `Time: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-        time--;
-        if (time < 0) {
-            clearInterval(timerInterval);
-            alert("Time is up! Submitting automatically...");
-            submitQuiz();
-        }
-    }, 1000);
-}
-
-startTimer();
-
-// ------------------- LOAD QUESTIONS -------------------
 let questions = [];
 let answers = JSON.parse(localStorage.getItem("answers")) || {};
+let examTerminated = false;
 
-async function loadQuestions() {
-    try {
-        const res = await fetch("/questions");
-        questions = await res.json();
+// ------------------- TIMER (SERVER SYNC) -------------------
+async function startTimer() {
+    const res = await fetch("/quizTime");
+    const { endTime } = await res.json();
 
-        if (!questions || questions.length === 0) {
-            document.getElementById("quiz").innerHTML = "<p>No questions available yet.</p>";
+    const end = new Date(endTime).getTime();
+    const timerElement = document.getElementById("timer");
+
+    setInterval(() => {
+        const now = new Date().getTime();
+        let timeLeft = Math.floor((end - now) / 1000);
+
+        if (timeLeft <= 0) {
+            submitQuiz();
             return;
         }
 
-        // Shuffle questions for random order
-        questions = questions.sort(() => Math.random() - 0.5);
+        let min = Math.floor(timeLeft / 60);
+        let sec = timeLeft % 60;
 
-        let html = "";
-        let nav = "";
-
-        questions.forEach((q, index) => {
-            nav += `<button onclick="scrollToQuestion(${q.id})" id="nav${q.id}">${index + 1}</button>`;
-            
-            html += `
-            <div class="question" id="q${q.id}">
-                <h3>${index + 1}. ${q.question}</h3>
-                <label><input type="radio" name="q${q.id}" value="A" onchange="saveAnswer(${q.id},'A')"> ${q.optionA}</label>
-                <label><input type="radio" name="q${q.id}" value="B" onchange="saveAnswer(${q.id},'B')"> ${q.optionB}</label>
-                <label><input type="radio" name="q${q.id}" value="C" onchange="saveAnswer(${q.id},'C')"> ${q.optionC}</label>
-                <label><input type="radio" name="q${q.id}" value="D" onchange="saveAnswer(${q.id},'D')"> ${q.optionD}</label>
-            </div><br>`;
-        });
-
-        document.getElementById("quiz").innerHTML = html;
-        document.getElementById("navButtons").innerHTML = nav;
-
-        restoreAnswers();
-        updateProgress();
-
-    } catch (err) {
-        console.log(err);
-        document.getElementById("quiz").innerHTML = "<p>Failed to load questions. Check server.</p>";
-    }
+        timerElement.innerText = `Time: ${min}:${sec < 10 ? '0'+sec : sec}`;
+    }, 1000);
 }
 
-loadQuestions();
+// ------------------- LOAD QUESTIONS -------------------
+async function loadQuestions() {
+    const res = await fetch("/questions");
+    const data = await res.json();
 
-// ------------------- SAVE ANSWER -------------------
-function saveAnswer(id, value) {
-    answers["q" + id] = value;
-    localStorage.setItem("answers", JSON.stringify(answers));
-    document.getElementById("nav" + id).classList.add("answered");
-    updateProgress();
-}
+    questions = data.questions;
 
-// ------------------- RESTORE ANSWERS -------------------
-function restoreAnswers() {
-    Object.keys(answers).forEach(key => {
-        const input = document.querySelector(`input[name="${key}"][value="${answers[key]}"]`);
-        if (input) input.checked = true;
+    let html = "";
 
-        const qid = key.replace("q", "");
-        const navBtn = document.getElementById("nav" + qid);
-        if (navBtn) navBtn.classList.add("answered");
+    questions.forEach((q, i) => {
+        html += `
+        <div>
+            <h3>${i+1}. ${q.question}</h3>
+            ${["A","B","C","D"].map(opt => `
+                <label>
+                    <input type="radio" name="q${q.id}" value="${opt}" 
+                    onchange="saveAnswer(${q.id}, '${opt}')">
+                    ${q["option"+opt]}
+                </label>
+            `).join("")}
+        </div>`;
     });
+
+    document.getElementById("quiz").innerHTML = html;
 }
 
-// ------------------- PROGRESS BAR -------------------
-function updateProgress() {
-    let total = questions.length;
-    let answered = Object.keys(answers).length;
-    let percent = (answered / total) * 100;
-    const progressBar = document.getElementById("progressBar");
-    if (progressBar) progressBar.style.width = percent + "%";
+// ------------------- SAVE -------------------
+function saveAnswer(id, val) {
+    answers["q"+id] = val;
+    localStorage.setItem("answers", JSON.stringify(answers));
 }
 
-// ------------------- NAVIGATION -------------------
-function scrollToQuestion(id) {
-    const element = document.getElementById("q" + id);
-    if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-    }
-}
-
-// ------------------- PREVENT REFRESH -------------------
-window.onbeforeunload = function () {
-    return "You may lose your quiz progress";
-}
-
-// ------------------- SUBMIT QUIZ -------------------
+// ------------------- SUBMIT -------------------
 async function submitQuiz() {
-    // Use saved answers
     const studentId = localStorage.getItem("studentId");
-    if (!studentId) {
-        alert("Student ID not found. Please login again.");
-        return;
-    }
 
-    try {
-        const res = await fetch("/submitQuiz", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentId, answers })
-        });
+    const questionIds = questions.map(q => q.id);
 
-        const data = await res.json();
-        localStorage.removeItem("answers");
+    const res = await fetch("/submitQuiz", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ studentId, answers, questionIds })
+    });
 
-        if (data.success) {
-            alert(`Your score: ${data.score}`);
-            window.location = "leaderboard.html";
-        } else {
-            alert("Failed to submit quiz: " + (data.message || "Unknown error"));
-        }
-
-    } catch (err) {
-        console.log(err);
-        alert("Error submitting quiz. Check server.");
-    }
+    const data = await res.json();
+    alert("Score: " + data.score);
+    localStorage.clear();
+    window.location = "/login.html";
 }
+
+// ------------------- FORCE TERMINATE -------------------
+async function forceSubmitAndLogout() {
+    if (examTerminated) return;
+    examTerminated = true;
+
+    const studentId = localStorage.getItem("studentId");
+
+    await fetch("/forceTerminate", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ studentId })
+    });
+
+    localStorage.clear();
+    window.location = "/login.html";
+}
+
+// ------------------- ANTI CHEAT -------------------
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) forceSubmitAndLogout();
+});
+
+window.addEventListener("blur", () => {
+    forceSubmitAndLogout();
+});
+
+setInterval(() => {
+    if (window.outerWidth - window.innerWidth > 160) {
+        forceSubmitAndLogout();
+    }
+}, 1000);
+
+// ------------------- SOCKET.IO -------------------
+const socket = io();
+
+socket.on("leaderboard", data => {
+    console.log("Live leaderboard", data);
+});
+
+// ------------------- INIT -------------------
+startTimer();
+loadQuestions();
